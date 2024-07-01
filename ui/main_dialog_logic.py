@@ -1,10 +1,10 @@
 import ctypes
 
 from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMainWindow, QCompleter, QTableWidgetItem, QMenu, QLabel, QWidgetAction, QWidget, \
-    QVBoxLayout, QTableWidget
+    QVBoxLayout, QTableWidget, QLCDNumber
 
 from database.db_helper import DBHelper
 from database.models import FuturesPositionBean
@@ -48,10 +48,10 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.initialize_futures_type_view()
         self.reset_spin_boxes()
 
-        self.doubleSpinBox_stop_loss_price.setRange(0, 1000000)
-        self.doubleSpinBox_cost_price.setRange(0, 1000000)
-        self.spinBox_position_quantity.setRange(0, 1000000)
-        self.doubleSpinBox_take_profit_price.setRange(0, 1000000)
+        self.doubleSpinBox_stop_loss_price.setRange(0, 100000000)
+        self.doubleSpinBox_cost_price.setRange(0, 100000000)
+        self.spinBox_position_quantity.setRange(0, 100000000)
+        self.doubleSpinBox_take_profit_price.setRange(0, 100000000)
 
         self.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)  # 所有列均匀拉伸
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
@@ -62,6 +62,15 @@ class MainDialog(QMainWindow, Ui_Dialog):
 
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tableWidget.customContextMenuRequested.connect(self.show_context_menu)
+
+        self.lcdNumber.setNumDigits(8)
+
+        self.lcdNumber.setSegmentStyle(QLCDNumber.Flat)  # 设置段样式为平面样式
+
+        # 创建一个定时器
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_time)
+        self.timer.start(1000)  # 每秒更新一次
 
         self.update_account_and_position_info()
 
@@ -76,6 +85,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.doubleSpinBox_stop_loss_price.valueChanged.connect(self.calculate)
         self.doubleSpinBox_cost_price.valueChanged.connect(self.calculate)
         self.spinBox_position_quantity.valueChanged.connect(self.calculate)
+        self.doubleSpinBox_take_profit_price.valueChanged.connect(self.calculate)
 
         self.radioButton_long.toggled.connect(self.radioButtonStateChanged)
         self.radioButton_short.toggled.connect(self.radioButtonStateChanged)
@@ -86,10 +96,17 @@ class MainDialog(QMainWindow, Ui_Dialog):
     def setup_event_filters(self):
         self.doubleSpinBox_stop_loss_price.installEventFilter(self)
         self.doubleSpinBox_cost_price.installEventFilter(self)
+        self.spinBox_position_quantity.installEventFilter(self)
+        self.lineEdit_dynamic_equity.installEventFilter(self)
+        self.doubleSpinBox_take_profit_price.installEventFilter(self)
         self.radio_event_filter = RadioButtonEventFilter(self.radioButton_long, self.radioButton_short)
         self.radioButton_long.installEventFilter(self.radio_event_filter)
         self.radioButton_short.installEventFilter(self.radio_event_filter)
-        self.installEventFilter(KeyPressEventFilter(self))
+
+    def update_time(self):
+        current_time = QTime.currentTime()
+        time_str = current_time.toString('hh:mm:ss')
+        self.lcdNumber.display(time_str)
 
     def initDB(self):
         if self.db_helper.is_futures_products_table_empty():
@@ -304,11 +321,11 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.is_maximized = not self.is_maximized  # 切换状态
 
     def eventFilter(self, obj, event):
-        # if event.type() == QtCore.QEvent.FocusIn:
-        #     if obj in (self.doubleSpinBox_stop_loss_price, self.doubleSpinBox_cost_price):
-        #         self.previous_focus_widget = obj
-        #         self.pushButton_ocr.setEnabled(True)
-        #         self.set_num_lock(True)
+        if event.type() == QtCore.QEvent.FocusIn:
+            if obj in (self.doubleSpinBox_stop_loss_price, self.doubleSpinBox_cost_price,self.spinBox_position_quantity, self.doubleSpinBox_take_profit_price,self.lineEdit_dynamic_equity):
+                self.previous_focus_widget = obj
+                # self.pushButton_ocr.setEnabled(True)
+                self.set_num_lock(True)
         #
         # elif event.type() == QtCore.QEvent.FocusOut:
         #     if obj in (self.doubleSpinBox_stop_loss_price, self.doubleSpinBox_cost_price):
@@ -408,16 +425,31 @@ class MainDialog(QMainWindow, Ui_Dialog):
             stop_loss_text = "1.止盈金额" if position_factor * (cost_price - stop_loss_price) < 0 else "1.止损金额"
             stop_loss_color = "red" if stop_loss_text == "1.止盈金额" else "black"
 
+            take_profit_price_amount = 0
+
+            if self.doubleSpinBox_take_profit_price.value() != self.doubleSpinBox_take_profit_price.minimum():
+                take_profit_price = self.doubleSpinBox_take_profit_price.value()
+                take_profit_price_amount = (take_profit_price - cost_price) * position_quantity * trading_units * position_factor
+
             position_value = cost_price * position_quantity * trading_units
             margin_amount = position_value * margin_ratio / 100
 
             if self.position_bean is None:
                 # New object, maintain current logic
-                result = (
-                    f'<span style="color:{stop_loss_color};">{stop_loss_text}: {abs(stop_loss_amount):.2f}</span><br>'
-                    f'2.头寸价值: {position_value:.2f}<br>'
-                    f'3.保证金金额: {margin_amount:.2f}'
-                )
+
+                if self.doubleSpinBox_take_profit_price.value() == self.doubleSpinBox_take_profit_price.minimum():
+                    result = (
+                        f'<span style="color:{stop_loss_color};">{stop_loss_text}: {abs(stop_loss_amount):.2f}</span><br>'
+                        f'2.头寸价值: {position_value:.2f}<br>'
+                        f'3.保证金金额: {margin_amount:.2f}<br>'
+                    )
+                else:
+                    result = (
+                        f'<span style="color:{stop_loss_color};">{stop_loss_text}: {abs(stop_loss_amount):.2f}</span><br>'
+                        f'2.头寸价值: {position_value:.2f}<br>'
+                        f'3.保证金金额: {margin_amount:.2f}<br>'
+                        f'4.止盈金额: {take_profit_price_amount:.2f}'
+                    )
             else:
                 # Existing object, show changes with arrows
                 previous_stop_loss_amount = self.position_bean.profit_loss_amount
@@ -427,12 +459,22 @@ class MainDialog(QMainWindow, Ui_Dialog):
                 previous_stop_loss_text = "1.止盈金额" if previous_stop_loss_amount > 0 else "1.止损金额"
                 previous_stop_loss_color = "red" if previous_stop_loss_text == "1.止盈金额" else "black"
 
-                result = (
-                    f'<span style="color:{previous_stop_loss_color};">{previous_stop_loss_text}: {abs(previous_stop_loss_amount):.2f} -> '
-                    f'<span style="color:{stop_loss_color};">{abs(stop_loss_amount):.2f}</span></span><br>'
-                    f'2.头寸价值: {previous_position_value:.2f} -> {position_value:.2f}<br>'
-                    f'3.保证金金额: {previous_margin_amount:.2f} -> {margin_amount:.2f}'
-                )
+                if self.doubleSpinBox_take_profit_price.value() == self.doubleSpinBox_take_profit_price.minimum():
+                    result = (
+                        f'<span style="color:{previous_stop_loss_color};">{previous_stop_loss_text}: {abs(previous_stop_loss_amount):.2f} -> '
+                        f'<span style="color:{stop_loss_color};">{abs(stop_loss_amount):.2f}</span></span><br>'
+                        f'2.头寸价值: {previous_position_value:.2f} -> {position_value:.2f}<br>'
+                        f'3.保证金金额: {previous_margin_amount:.2f} -> {margin_amount:.2f}<br>'
+                    )
+                else:
+                    result = (
+                        f'<span style="color:{previous_stop_loss_color};">{previous_stop_loss_text}: {abs(previous_stop_loss_amount):.2f} -> '
+                        f'<span style="color:{stop_loss_color};">{abs(stop_loss_amount):.2f}</span></span><br>'
+                        f'2.头寸价值: {previous_position_value:.2f} -> {position_value:.2f}<br>'
+                        f'3.保证金金额: {previous_margin_amount:.2f} -> {margin_amount:.2f}<br>'
+                        f'4.止盈金额: {take_profit_price_amount:.2f}'
+                    )
+
 
             self.textBrowser.setHtml(result)
 
@@ -485,19 +527,4 @@ class RadioButtonEventFilter(QtCore.QObject):
                     self.radioButton_long.setChecked(True)
                     self.radioButton_long.setFocus()
                     return True
-        return super().eventFilter(obj, event)
-
-class KeyPressEventFilter(QtCore.QObject):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.parent = parent
-
-    def eventFilter(self, obj, event):
-        if event.type() == QtCore.QEvent.KeyPress:
-            if event.key() == Qt.Key_Tab and not event.modifiers() & Qt.ShiftModifier:
-                QtWidgets.QWidget.focusNextChild()
-                return True
-            elif event.key() == Qt.Key_Tab and event.modifiers() & Qt.ShiftModifier:
-                QtWidgets.QWidget.focusPreviousChild()
-                return True
         return super().eventFilter(obj, event)
