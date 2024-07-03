@@ -34,6 +34,12 @@ class FuturesPositionBean(Base):
     product_value = Column(Float)
     operation_direction = Column(Integer)
 
+class ReminderBean(Base):
+    __tablename__ = 'reminder_time'
+    id = Column(INTEGER, Sequence('article_aid_seq', start=1, increment=1), primary_key=True)
+    reminder_time = Column(String)
+    is_checked = Column(Boolean)
+
 
 # 数据库连接
 engine = create_engine('sqlite:///energyx.db')

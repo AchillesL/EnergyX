@@ -1,14 +1,19 @@
 import ctypes
 
+import pygame
 from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer, QThread, QObject, pyqtSlot
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMainWindow, QCompleter, QTableWidgetItem, QMenu, QLabel, QWidgetAction, QWidget, \
     QVBoxLayout, QTableWidget, QLCDNumber
 
+import numpy as np
+import winsound
+
 from database.db_helper import DBHelper
 from database.models import FuturesPositionBean
 from ui.main_dialog_ui_2 import Ui_Dialog
+from ui.reminder_dialog_logic import ReminderDialog
 # from ui.ocr import TransparentWindow
 from utils import utils
 from utils.futures_product_info_utils import FuturesProductInfoUtils
@@ -67,6 +72,14 @@ class MainDialog(QMainWindow, Ui_Dialog):
 
         self.lcdNumber.setSegmentStyle(QLCDNumber.Flat)  # 设置段样式为平面样式
 
+        pygame.init()
+        pygame.mixer.init()
+        # pygame.mixer.music.load("./music/didi.mp3")
+        # pygame.mixer.music.load(r"C:\Users\zengg\Documents\Code\PycharmProjects\EnergyX\music\didi.mp3")
+        pygame.mixer.music.load(utils.get_resource_path("music/didi.mp3"))
+
+        self.update_time()
+
         # 创建一个定时器
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)
@@ -79,6 +92,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.pushButton_clear.clicked.connect(self.on_clear_clicked)
         self.pushButton_clear_table.clicked.connect(self.on_clear_all_positions_clicked)
         self.pushButton_account.clicked.connect(self.toggle_width)
+        self.pushButton_reminder.clicked.connect(self.on_reminder_clicked)
         self.lineEdit_dynamic_equity.returnPressed.connect(self.on_return_pressed_to_dynamic_equity)
         # self.pushButton_ocr.clicked.connect(self.on_ocr_clicked)
 
@@ -107,6 +121,40 @@ class MainDialog(QMainWindow, Ui_Dialog):
         current_time = QTime.currentTime()
         time_str = current_time.toString('hh:mm:ss')
         self.lcdNumber.display(time_str)
+
+        # 获取提醒时间列表
+        self.reminder_time_list = self.db_helper.get_reminder_time_list()
+
+        self.target_time = None
+
+        for time_str in self.reminder_time_list:
+            target_time = QTime.fromString(time_str, 'hh:mm')
+            if target_time.isValid():
+                diff = current_time.secsTo(target_time)
+                if diff < 0:
+                    continue
+                else:
+                    self.target_time = target_time
+                    break
+
+        if self.target_time is not None:
+            diff = current_time.secsTo(self.target_time) - 90
+
+            if diff > 0:
+                hours, remainder = divmod(diff, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                self.lcdNumber_reminder.display(f"{hours:02}:{minutes:02}:{seconds:02}")
+            else:
+                self.lcdNumber_reminder.display("00:00:00")
+
+            if diff == 0:
+                self.play_reminder_sound()
+        else:
+            self.lcdNumber_reminder.display("00:00:00")
+
+    def play_reminder_sound(self):
+        pygame.mixer.music.play()
+
 
     def initDB(self):
         if self.db_helper.is_futures_products_table_empty():
@@ -320,6 +368,10 @@ class MainDialog(QMainWindow, Ui_Dialog):
 
         self.is_maximized = not self.is_maximized  # 切换状态
 
+    def on_reminder_clicked(self):
+        newWin = ReminderDialog(self)
+        newWin.exec_()
+
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.FocusIn:
             if obj in (self.doubleSpinBox_stop_loss_price, self.doubleSpinBox_cost_price,self.spinBox_position_quantity, self.doubleSpinBox_take_profit_price,self.lineEdit_dynamic_equity):
@@ -349,17 +401,26 @@ class MainDialog(QMainWindow, Ui_Dialog):
             print(f"Right-clicked row: {row}, Object: {position_obj}")
 
             menu = QMenu()
-            custom_delete_action = CustomMenuItem("    删    除    ", menu)
-            custom_delete_action.clicked.connect(lambda: self.delete_row(position_obj))
+            custom_delete_action_item = CustomMenuItem("    删    除    ", menu)
+            custom_delete_action_item.clicked.connect(lambda: self.delete_row(position_obj))
             delete_action = QWidgetAction(menu)
-            delete_action.setDefaultWidget(custom_delete_action)
+            delete_action.setDefaultWidget(custom_delete_action_item)
             menu.addAction(delete_action)
+
+            add_position_action_item = CustomMenuItem("    加    仓    ", menu)
+            add_position_action_item.clicked.connect(lambda: self.add_position(position_obj))
+            add_position_action = QWidgetAction(menu)
+            add_position_action.setDefaultWidget(add_position_action_item)
+            menu.addAction(add_position_action)
 
             menu.exec_(self.tableWidget.viewport().mapToGlobal(position))
 
     def delete_row(self, position_obj):
         self.db_helper.delete_futures_position(position_obj)
         self.update_account_and_position_info()
+
+    def add_position(self, position_obj):
+        pass
 
     def update_account_and_position_info(self):
         self.update_account_info()

@@ -14,7 +14,7 @@ from PyQt5.QtGui import QFont, QColor, QPalette
 from PyQt5.QtWidgets import QSpinBox, QDoubleSpinBox, QHeaderView, QTableWidget
 
 
-class Ui_MainDialog(object):
+class Ui_ReminderDialog(object):
 
     def __init__(self):
         super().__init__()

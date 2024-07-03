@@ -1,7 +1,7 @@
 from sqlalchemy import desc
 
-from database.models import Session, init_db
-from .models import FuturesProductBean, FuturesPositionBean,AccountBean
+from database.models import Session, init_db, ReminderBean
+from .models import FuturesProductBean, FuturesPositionBean, AccountBean
 
 
 class DBHelper:
@@ -54,7 +54,8 @@ class DBHelper:
         self.session.query(FuturesPositionBean).delete()
         self.session.commit()
 
-    def add_futures_product(self, pin_yin, trading_product, trading_code, trading_units, minimum_price_change, margin_ratio):
+    def add_futures_product(self, pin_yin, trading_product, trading_code, trading_units, minimum_price_change,
+                            margin_ratio):
         new_product = FuturesProductBean(
             pin_yin=pin_yin,
             trading_product=trading_product,
@@ -103,3 +104,35 @@ class DBHelper:
 
     def get_all_futures_products(self):
         return self.session.query(FuturesProductBean).all()
+
+    def is_reminder_table_empty(self):
+        return self.session.query(ReminderBean).count() == 0
+
+    def insert_reminder(self, reminder_time, is_checked):
+        reminder = ReminderBean(
+            reminder_time=reminder_time,
+            is_checked=is_checked
+        )
+        self.session.add(reminder)
+        self.session.commit()
+
+    def update_reminder_bean(self, reminder_time, is_checked):
+        reminder_bean = self.session.query(ReminderBean).filter_by(reminder_time=reminder_time).first()
+        reminder_bean.is_checked = is_checked
+        self.session.commit()
+
+    def get_reminder_bean(self, reminder_time):
+        return self.session.query(ReminderBean).filter_by(reminder_time=reminder_time).first()
+
+    def get_reminder_time_list(self):
+
+        reminder_list = self.session.query(ReminderBean).all()
+        reminder_time_list = []
+
+        if reminder_list != None:
+            for reminder in reminder_list:
+                if reminder.is_checked == True:
+                    reminder_time_list.append(reminder.reminder_time)
+
+        return reminder_time_list
+

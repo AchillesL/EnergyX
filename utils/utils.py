@@ -1,3 +1,7 @@
+import os
+import sys
+
+
 def is_number(s):
     """
     判断一个字符串是否为数字（整数或浮点数）。
@@ -26,3 +30,9 @@ def format_currency(value):
     except Exception as e:
         print(f"Error formatting currency: {e}")
         return str(value)  # 返回原始值，以防止显示问题#
+
+def get_resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+

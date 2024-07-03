@@ -1,0 +1,1 @@
+ pyinstaller -F -w --add-data "music/didi.mp3:music" -i .\energy.ico .\app.py -n="EnergyX.exe"
