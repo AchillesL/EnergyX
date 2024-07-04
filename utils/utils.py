@@ -1,3 +1,4 @@
+import ctypes
 import os
 import sys
 
@@ -35,4 +36,17 @@ def get_resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
+
+def set_num_lock(state):
+    # Get the current state of the Num Lock key
+    hllDll = ctypes.WinDLL("User32.dll")
+    VK_NUMLOCK = 0x90
+    if state:
+        if (hllDll.GetKeyState(VK_NUMLOCK) & 0x0001) == 0:
+            hllDll.keybd_event(VK_NUMLOCK, 0x45, 0x1, 0)
+            hllDll.keybd_event(VK_NUMLOCK, 0x45, 0x1 | 0x2, 0)
+    else:
+        if (hllDll.GetKeyState(VK_NUMLOCK) & 0x0001) != 0:
+            hllDll.keybd_event(VK_NUMLOCK, 0x45, 0x1, 0)
+            hllDll.keybd_event(VK_NUMLOCK, 0x45, 0x1 | 0x2, 0)
 

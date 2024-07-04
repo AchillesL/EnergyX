@@ -10,6 +10,9 @@ class ReminderDialog(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.setupUi(self)
+        self.setWindowTitle("Zengguo.Liang")
+
         self.setWindowFlags(
             self.windowFlags() | Qt.WindowStaysOnTopHint | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowMinimizeButtonHint)
 
@@ -34,8 +37,6 @@ class ReminderDialog(QDialog, Ui_Dialog):
             self.db_helper.insert_reminder('23:00', False)
 
     def initUI(self):
-        self.setupUi(self)
-
         self.in_set_all_time_status = False
         self.in_set_each_time_status = False
 

@@ -12,6 +12,7 @@ import winsound
 
 from database.db_helper import DBHelper
 from database.models import FuturesPositionBean
+from ui.add_position_logic import AddPositionDialog
 from ui.main_dialog_ui_2 import Ui_Dialog
 from ui.reminder_dialog_logic import ReminderDialog
 # from ui.ocr import TransparentWindow
@@ -377,7 +378,8 @@ class MainDialog(QMainWindow, Ui_Dialog):
             if obj in (self.doubleSpinBox_stop_loss_price, self.doubleSpinBox_cost_price,self.spinBox_position_quantity, self.doubleSpinBox_take_profit_price,self.lineEdit_dynamic_equity):
                 self.previous_focus_widget = obj
                 # self.pushButton_ocr.setEnabled(True)
-                self.set_num_lock(True)
+                utils.set_num_lock(True)
+
         #
         # elif event.type() == QtCore.QEvent.FocusOut:
         #     if obj in (self.doubleSpinBox_stop_loss_price, self.doubleSpinBox_cost_price):
@@ -420,7 +422,9 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.update_account_and_position_info()
 
     def add_position(self, position_obj):
-        pass
+        add_position_win = AddPositionDialog(self, position_obj)
+        add_position_win.position_saved.connect(self.update_account_and_position_info)
+        add_position_win.exec_()
 
     def update_account_and_position_info(self):
         self.update_account_info()
@@ -452,20 +456,6 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.comboBox_futures_type.setEnabled(False)
         self.radioButton_long.setEnabled(False)
         self.radioButton_short.setEnabled(False)
-
-    # Function to set Num Lock state
-    def set_num_lock(self, state):
-        # Get the current state of the Num Lock key
-        hllDll = ctypes.WinDLL("User32.dll")
-        VK_NUMLOCK = 0x90
-        if state:
-            if (hllDll.GetKeyState(VK_NUMLOCK) & 0x0001) == 0:
-                hllDll.keybd_event(VK_NUMLOCK, 0x45, 0x1, 0)
-                hllDll.keybd_event(VK_NUMLOCK, 0x45, 0x1 | 0x2, 0)
-        else:
-            if (hllDll.GetKeyState(VK_NUMLOCK) & 0x0001) != 0:
-                hllDll.keybd_event(VK_NUMLOCK, 0x45, 0x1, 0)
-                hllDll.keybd_event(VK_NUMLOCK, 0x45, 0x1 | 0x2, 0)
 
     def calculate(self):
         if self.selected_future is None or not self.doubleSpinBox_stop_loss_price.lineEdit().text() or not self.doubleSpinBox_cost_price.lineEdit().text() or not self.spinBox_position_quantity.lineEdit().text():

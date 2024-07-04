@@ -1,4 +1,5 @@
 from sqlalchemy import desc
+from sqlalchemy.orm import sessionmaker
 
 from database.models import Session, init_db, ReminderBean
 from .models import FuturesProductBean, FuturesPositionBean, AccountBean
@@ -40,6 +41,10 @@ class DBHelper:
         self.session.add(position_bean)
         self.session.commit()
 
+    def update_futures_position(self, position_bean):
+        self.session.merge(position_bean)
+        self.session.commit()
+
     def delete_futures_position(self, position):
         try:
             self.session.delete(position)
@@ -76,6 +81,8 @@ class DBHelper:
             for key, value in kwargs.items():
                 setattr(product, key, value)
             self.session.commit()
+
+
 
     def delete_futures_product(self, product_id):
         product = self.session.query(FuturesProductBean).filter_by(id=product_id).first()

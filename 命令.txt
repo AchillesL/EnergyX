@@ -1,0 +1,3 @@
+ui转py：pyuic5 -o add_position_py.py add_position_ui.ui
+
+打包：pyinstaller -F -w --add-data "music/didi.mp3:music" -i .\energy.ico .\app.py -n="EnergyX.exe"
