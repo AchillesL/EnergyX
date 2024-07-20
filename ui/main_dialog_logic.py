@@ -18,6 +18,8 @@ from ui.reminder_dialog_logic import ReminderDialog
 # from ui.ocr import TransparentWindow
 from utils import utils
 from utils.futures_product_info_utils import FuturesProductInfoUtils
+from utils.utils import format_currency
+
 
 class MainDialog(QMainWindow, Ui_Dialog):
     def __init__(self):
@@ -472,7 +474,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
             position_factor = 1 if self.radioButton_long.isChecked() else -1
 
             # Calculate current values
-            stop_loss_amount = (cost_price - stop_loss_price) * position_quantity * trading_units * position_factor
+            stop_loss_amount = (stop_loss_price - cost_price) * position_quantity * trading_units * position_factor
             stop_loss_text = "1.止盈金额" if position_factor * (cost_price - stop_loss_price) < 0 else "1.止损金额"
             stop_loss_color = "red" if stop_loss_text == "1.止盈金额" else "black"
 
@@ -490,16 +492,16 @@ class MainDialog(QMainWindow, Ui_Dialog):
 
                 if self.doubleSpinBox_take_profit_price.value() == self.doubleSpinBox_take_profit_price.minimum():
                     result = (
-                        f'<span style="color:{stop_loss_color};">{stop_loss_text}: {abs(stop_loss_amount):.2f}</span><br>'
-                        f'2.头寸价值: {position_value:.2f}<br>'
-                        f'3.保证金金额: {margin_amount:.2f}<br>'
+                        f'<span style="color:{stop_loss_color};">{stop_loss_text}: {stop_loss_amount:.0f}</span><br>'
+                        f'2.头寸价值: {position_value:.0f}<br>'
+                        f'3.保证金金额: {margin_amount:.0f}<br>'
                     )
                 else:
                     result = (
-                        f'<span style="color:{stop_loss_color};">{stop_loss_text}: {abs(stop_loss_amount):.2f}</span><br>'
-                        f'2.头寸价值: {position_value:.2f}<br>'
-                        f'3.保证金金额: {margin_amount:.2f}<br>'
-                        f'4.止盈金额: {take_profit_price_amount:.2f}'
+                        f'<span style="color:{stop_loss_color};">{stop_loss_text}: {stop_loss_amount:.0f}</span><br>'
+                        f'2.头寸价值: {position_value}<br>'
+                        f'3.保证金金额: {margin_amount:.0f}<br>'
+                        f'4.止盈金额: {take_profit_price_amount:.0f}'
                     )
             else:
                 # Existing object, show changes with arrows
@@ -512,18 +514,18 @@ class MainDialog(QMainWindow, Ui_Dialog):
 
                 if self.doubleSpinBox_take_profit_price.value() == self.doubleSpinBox_take_profit_price.minimum():
                     result = (
-                        f'<span style="color:{previous_stop_loss_color};">{previous_stop_loss_text}: {abs(previous_stop_loss_amount):.2f} -> '
-                        f'<span style="color:{stop_loss_color};">{abs(stop_loss_amount):.2f}</span></span><br>'
-                        f'2.头寸价值: {previous_position_value:.2f} -> {position_value:.2f}<br>'
-                        f'3.保证金金额: {previous_margin_amount:.2f} -> {margin_amount:.2f}<br>'
+                        f'<span style="color:{previous_stop_loss_color};">{previous_stop_loss_text}: {previous_stop_loss_amount:.0f} -> '
+                        f'<span style="color:{stop_loss_color};">{stop_loss_amount:.0f}</span></span><br>'
+                        f'2.头寸价值: {previous_position_value:.0f} -> {position_value:.0f}<br>'
+                        f'3.保证金金额: {previous_margin_amount:.0f} -> {margin_amount:.0f}<br>'
                     )
                 else:
                     result = (
-                        f'<span style="color:{previous_stop_loss_color};">{previous_stop_loss_text}: {abs(previous_stop_loss_amount):.2f} -> '
-                        f'<span style="color:{stop_loss_color};">{abs(stop_loss_amount):.2f}</span></span><br>'
-                        f'2.头寸价值: {previous_position_value:.2f} -> {position_value:.2f}<br>'
-                        f'3.保证金金额: {previous_margin_amount:.2f} -> {margin_amount:.2f}<br>'
-                        f'4.止盈金额: {take_profit_price_amount:.2f}'
+                        f'<span style="color:{previous_stop_loss_color};">{previous_stop_loss_text}: {(previous_stop_loss_amount):.0f} -> '
+                        f'<span style="color:{stop_loss_color};">{(stop_loss_amount):.0f}</span></span><br>'
+                        f'2.头寸价值: {previous_position_value:.0f} -> {position_value:.0f}<br>'
+                        f'3.保证金金额: {previous_margin_amount:.0f} -> {margin_amount:.0f}<br>'
+                        f'4.止盈金额: {take_profit_price_amount:.0f}'
                     )
 
 

@@ -45,8 +45,10 @@ class AddPositionDialog(QDialog, Ui_Dialog):
 
         if self.position.operation_direction == 1:
             self.radioButton_long.setChecked(True)
-        else:
             self.radioButton_short.setChecked(False)
+        else:
+            self.radioButton_long.setChecked(False)
+            self.radioButton_short.setChecked(True)
 
         self.radioButton_long.setChecked(False)
         self.radioButton_short.setEnabled(False)
