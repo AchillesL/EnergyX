@@ -1,24 +1,18 @@
-import ctypes
-
 import pygame
 from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer, QThread, QObject, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMainWindow, QCompleter, QTableWidgetItem, QMenu, QLabel, QWidgetAction, QWidget, \
     QVBoxLayout, QTableWidget, QLCDNumber
 
-import numpy as np
-import winsound
-
 from database.db_helper import DBHelper
 from database.models import FuturesPositionBean
-from ui.add_position_logic import AddPositionDialog
+from logic.add_position_logic import AddPositionDialog
 from ui.main_dialog_ui_2 import Ui_Dialog
-from ui.reminder_dialog_logic import ReminderDialog
+from logic.reminder_dialog_logic import ReminderDialog
 # from ui.ocr import TransparentWindow
 from utils import utils
 from utils.futures_product_info_utils import FuturesProductInfoUtils
-from utils.utils import format_currency
 
 
 class MainDialog(QMainWindow, Ui_Dialog):
