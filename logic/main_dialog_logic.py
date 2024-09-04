@@ -1,7 +1,7 @@
 import pygame
 from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer
-from PyQt5.QtGui import QPalette, QColor, QFont
+from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer, QFileInfo, QDate
+from PyQt5.QtGui import QPalette, QColor, QFont, QIcon
 from PyQt5.QtWidgets import QMainWindow, QCompleter, QTableWidgetItem, QMenu, QLabel, QWidgetAction, QWidget, \
     QVBoxLayout, QTableWidget, QLCDNumber
 
@@ -35,11 +35,8 @@ class MainDialog(QMainWindow, Ui_Dialog):
 
         # 设置窗口标题和图标
         self.setWindowTitle("Zengguo.Liang")
-        icon = QtGui.QIcon("energyx.ico")
-        if icon.isNull():
-            print("Failed to load icon")
-        else:
-            self.setWindowIcon(icon)
+
+        self.setWindowIcon(QIcon(utils.get_resource_path('pic\energy.ico')))
 
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowMinimizeButtonHint)
 
@@ -115,6 +112,14 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.radioButton_short.installEventFilter(self.radio_event_filter)
 
     def update_time(self):
+        current_date = QDate.currentDate()
+        day_of_week = current_date.dayOfWeek()  # 获取当前星期几，返回值为1-7, 1为周一，7为周日
+
+        # 判断是否为周六(6)或周日(7)，如果是则返回，不执行提醒
+        if day_of_week in (6, 7):
+            self.lcdNumber_reminder.display("00:00:00")
+            return
+
         current_time = QTime.currentTime()
         time_str = current_time.toString('hh:mm:ss')
         self.lcdNumber.display(time_str)
@@ -418,7 +423,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.update_account_and_position_info()
 
     def add_position(self, position_obj):
-        add_position_win = AddPositionDialog(self, position_obj)
+        add_position_win = AddPositionDialog(self, position_obj ,self.db_helper)
         add_position_win.position_saved.connect(self.update_account_and_position_info)
         add_position_win.exec_()
 

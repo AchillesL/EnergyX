@@ -1,24 +1,21 @@
-import ctypes
-
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPalette, QColor, QIcon
+from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QDialog
 
-from database.db_helper import DBHelper
 from database.models import FuturesPositionBean
 from ui.add_position_py import Ui_Dialog
 from utils import utils
 
 
 class AddPositionDialog(QDialog, Ui_Dialog):
-
     position_saved = pyqtSignal()  # 定义一个信号
 
-    def __init__(self, parent=None, position: FuturesPositionBean =None):
+    def __init__(self, parent=None, position: FuturesPositionBean = None, db_helper=None):
         super().__init__(parent)
 
         self.position = position
+        self.db_helper = db_helper
 
         self.setupUi(self)
 
@@ -31,7 +28,6 @@ class AddPositionDialog(QDialog, Ui_Dialog):
             self.windowFlags() | Qt.WindowStaysOnTopHint | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowMinimizeButtonHint)
 
     def initDB(self):
-        self.db_helper = DBHelper()
         self.futures_products = self.db_helper.get_all_futures_products()
         self.selected_future = self.get_selected_future_by_text(self.position.product_name)
 
@@ -90,7 +86,8 @@ class AddPositionDialog(QDialog, Ui_Dialog):
         position_factor = 1 if self.radioButton_long.isChecked() else -1
 
         # 计算旧止损金额
-        old_stop_loss_amount = (self.position.stop_loss_price - self.position.cost_price) * self.position.position_quantity * self.selected_future.trading_units * position_factor
+        old_stop_loss_amount = (
+                                       self.position.stop_loss_price - self.position.cost_price) * self.position.position_quantity * self.selected_future.trading_units * position_factor
         old_position_value = self.position.cost_price * self.position.position_quantity * self.selected_future.trading_units
 
         # 计算新头寸数量
@@ -105,8 +102,10 @@ class AddPositionDialog(QDialog, Ui_Dialog):
             stop_loss_amount_str = "N/A"
             position_value_str = "N/A"
         else:
-            new_cost_price = (self.position.cost_price * self.position.position_quantity + self.doubleSpinBox_add_pos_price.value() * add_pos_quantity) / new_pos_quantity
-            new_stop_loss_amount = (self.doubleSpinBox_new_stop_loss_price.value() - new_cost_price) * new_pos_quantity * self.selected_future.trading_units * position_factor
+            new_cost_price = (
+                                     self.position.cost_price * self.position.position_quantity + self.doubleSpinBox_add_pos_price.value() * add_pos_quantity) / new_pos_quantity
+            new_stop_loss_amount = (
+                                           self.doubleSpinBox_new_stop_loss_price.value() - new_cost_price) * new_pos_quantity * self.selected_future.trading_units * position_factor
             new_position_value = new_cost_price * new_pos_quantity * self.selected_future.trading_units
             cost_price_str = utils.format_to_two_places(new_cost_price)
             stop_loss_amount_str = utils.format_to_two_places(new_stop_loss_amount)
@@ -155,10 +154,10 @@ class AddPositionDialog(QDialog, Ui_Dialog):
         self.position.stop_loss_price = result['new_stop_loss_price']
         self.position.product_value = result['new_position_value']
 
-        self.db_helper.update_futures_position(self.position)
+        # self.db_helper.update_futures_position(self.position)
+        self.db_helper.add_futures_position(self.position)
         self.position_saved.emit()
         self.close()
-
 
     def clear_position(self):
         self.doubleSpinBox_new_stop_loss_price.clear()

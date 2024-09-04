@@ -1,5 +1,4 @@
 from sqlalchemy import desc
-from sqlalchemy.orm import sessionmaker
 
 from database.models import Session, init_db, ReminderBean
 from .models import FuturesProductBean, FuturesPositionBean, AccountBean
@@ -41,10 +40,6 @@ class DBHelper:
         self.session.add(position_bean)
         self.session.commit()
 
-    def update_futures_position(self, position_bean):
-        self.session.merge(position_bean)
-        self.session.commit()
-
     def delete_futures_position(self, position):
         try:
             self.session.delete(position)
@@ -59,8 +54,7 @@ class DBHelper:
         self.session.query(FuturesPositionBean).delete()
         self.session.commit()
 
-    def add_futures_product(self, pin_yin, trading_product, trading_code, trading_units, minimum_price_change,
-                            margin_ratio):
+    def add_futures_product(self, pin_yin, trading_product, trading_code, trading_units, minimum_price_change, margin_ratio):
         new_product = FuturesProductBean(
             pin_yin=pin_yin,
             trading_product=trading_product,

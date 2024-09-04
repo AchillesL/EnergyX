@@ -39,6 +39,7 @@ class FuturesProductInfoUtils:
         {'pinYin': 'SL', 'tradingCode': 'L', 'tradingProduct': '塑料', 'tradingUnits': '5', 'minimumPriceChange': '1', 'marginRatio': '7'},
         {'pinYin': 'DX', 'tradingCode': 'PF', 'tradingProduct': '短纤', 'tradingUnits': '5', 'minimumPriceChange': '2', 'marginRatio': '8'},
         {'pinYin': 'YEC', 'tradingCode': 'EG', 'tradingProduct': '乙二醇', 'tradingUnits': '10', 'minimumPriceChange': '1', 'marginRatio': '8'},
+        {'pinYin': 'PP', 'tradingCode': 'PR', 'tradingProduct': '瓶片', 'tradingUnits': '15', 'minimumPriceChange': '2', 'marginRatio': '8'},
         {'pinYin': 'JC', 'tradingCode': 'MA', 'tradingProduct': '甲醇', 'tradingUnits': '10', 'minimumPriceChange': '1', 'marginRatio': '8'},
         {'pinYin': 'JBX', 'tradingCode': 'PP', 'tradingProduct': '聚丙烯', 'tradingUnits': '5', 'minimumPriceChange': '1', 'marginRatio': '7'},
         {'pinYin': 'BBX', 'tradingCode': 'EB', 'tradingProduct': '苯乙烯', 'tradingUnits': '5', 'minimumPriceChange': '1', 'marginRatio': '8'},
