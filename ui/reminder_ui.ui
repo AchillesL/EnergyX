@@ -319,6 +319,44 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
+     <widget class="QLabel" name="label">
+      <property name="font">
+       <font>
+        <family>Times New Roman</family>
+        <pointsize>13</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>分钟: </string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSpinBox" name="reminder_spinBox">
+      <property name="minimumSize">
+       <size>
+        <width>120</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>120</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Times New Roman</family>
+        <pointsize>13</pointsize>
+       </font>
+      </property>
+      <property name="maximum">
+       <number>15</number>
+      </property>
+     </widget>
+    </item>
+    <item>
      <spacer name="horizontalSpacer">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>

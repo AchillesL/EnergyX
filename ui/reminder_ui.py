@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'reminder_ui.ui'
+# Form implementation generated from reading ui file '.\reminder_ui.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -152,6 +152,23 @@ class Ui_Dialog(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label = QtWidgets.QLabel(self.horizontalLayoutWidget)
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(13)
+        self.label.setFont(font)
+        self.label.setObjectName("label")
+        self.horizontalLayout.addWidget(self.label)
+        self.reminder_spinBox = QtWidgets.QSpinBox(self.horizontalLayoutWidget)
+        self.reminder_spinBox.setMinimumSize(QtCore.QSize(120, 40))
+        self.reminder_spinBox.setMaximumSize(QtCore.QSize(120, 40))
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(13)
+        self.reminder_spinBox.setFont(font)
+        self.reminder_spinBox.setMaximum(15)
+        self.reminder_spinBox.setObjectName("reminder_spinBox")
+        self.horizontalLayout.addWidget(self.reminder_spinBox)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.pushButton_save_reminder = QtWidgets.QPushButton(self.horizontalLayoutWidget)
@@ -186,4 +203,5 @@ class Ui_Dialog(object):
         self.checkBox_2200.setText(_translate("Dialog", "22:00"))
         self.checkBox_2230.setText(_translate("Dialog", "22:30"))
         self.checkBox_2300.setText(_translate("Dialog", "23:00"))
+        self.label.setText(_translate("Dialog", "分钟: "))
         self.pushButton_save_reminder.setText(_translate("Dialog", "保  存"))

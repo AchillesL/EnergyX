@@ -1,7 +1,7 @@
 from sqlalchemy import desc
 
 from database.models import Session, init_db, ReminderBean
-from .models import FuturesProductBean, FuturesPositionBean, AccountBean
+from .models import FuturesProductBean, FuturesPositionBean, AccountBean, SettingtBean
 
 
 class DBHelper:
@@ -124,6 +124,14 @@ class DBHelper:
 
     def get_reminder_bean(self, reminder_time):
         return self.session.query(ReminderBean).filter_by(reminder_time=reminder_time).first()
+
+    def load_setting_bean(self):
+        return self.session.query(SettingtBean).first()
+
+    def update_setting_bean(self, setting_bean):
+        self.session.add(setting_bean)
+        self.session.commit()
+
 
     def get_reminder_time_list(self):
 

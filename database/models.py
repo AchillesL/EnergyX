@@ -9,6 +9,7 @@ class AccountBean(Base):
 
     id = Column(INTEGER, Sequence('article_aid_seq', start=1, increment=1), primary_key=True)
     dynamic_equity = Column(Float)
+    reminder_ahead_of_time = Column(Integer)
 
 class FuturesProductBean(Base):
     __tablename__ = 'futures_products'
@@ -39,6 +40,12 @@ class ReminderBean(Base):
     id = Column(INTEGER, Sequence('article_aid_seq', start=1, increment=1), primary_key=True)
     reminder_time = Column(String)
     is_checked = Column(Boolean)
+
+class SettingtBean(Base):
+    __tablename__ = 'setting'
+
+    id = Column(INTEGER, Sequence('article_aid_seq', start=1, increment=1), primary_key=True)
+    reminder_ahead_of_time = Column(Integer)
 
 
 # 数据库连接

@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QDialog
 
 from database.db_helper import DBHelper
 from ui.reminder_ui import Ui_Dialog
+from database.models import SettingtBean
 
 
 class ReminderDialog(QDialog, Ui_Dialog):
@@ -36,9 +37,16 @@ class ReminderDialog(QDialog, Ui_Dialog):
             self.db_helper.insert_reminder('22:30', False)
             self.db_helper.insert_reminder('23:00', False)
 
+        self.settingtBean = self.db_helper.load_setting_bean()
+        if self.settingtBean == None:
+            self.settingtBean = SettingtBean()
+            self.settingtBean.reminder_ahead_of_time = 0
+
     def initUI(self):
         self.in_set_all_time_status = False
         self.in_set_each_time_status = False
+
+        self.reminder_spinBox.setValue(self.settingtBean.reminder_ahead_of_time)
 
         self.checkBox_0930.setChecked(self.db_helper.get_reminder_bean('09:30').is_checked)
         self.checkBox_1000.setChecked(self.db_helper.get_reminder_bean('10:00').is_checked)
@@ -90,6 +98,10 @@ class ReminderDialog(QDialog, Ui_Dialog):
         self.pushButton_save_reminder.clicked.connect(lambda: self.save_reminder())
 
     def save_reminder(self):
+        reminder_ahead_of_time = self.reminder_spinBox.value()
+        self.settingtBean.reminder_ahead_of_time = reminder_ahead_of_time
+        self.db_helper.update_setting_bean(self.settingtBean)
+
         self.db_helper.update_reminder_bean(reminder_time='09:30', is_checked=self.checkBox_0930.isChecked())
         self.db_helper.update_reminder_bean(reminder_time='10:00', is_checked=self.checkBox_1000.isChecked())
         self.db_helper.update_reminder_bean(reminder_time='10:45', is_checked=self.checkBox_1045.isChecked())

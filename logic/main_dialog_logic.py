@@ -140,7 +140,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
                     break
 
         if self.target_time is not None:
-            diff = current_time.secsTo(self.target_time) - 90
+            diff = current_time.secsTo(self.target_time) - self.db_helper.load_setting_bean().reminder_ahead_of_time * 60
 
             if diff > 0:
                 hours, remainder = divmod(diff, 3600)
