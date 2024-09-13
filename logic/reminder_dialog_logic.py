@@ -40,13 +40,19 @@ class ReminderDialog(QDialog, Ui_Dialog):
         self.settingtBean = self.db_helper.load_setting_bean()
         if self.settingtBean == None:
             self.settingtBean = SettingtBean()
-            self.settingtBean.reminder_ahead_of_time = 0
+            self.settingtBean.reminder_one_ahead_of_min = 0
+            self.settingtBean.reminder_one_ahead_of_sec = 0
+            self.settingtBean.reminder_two_ahead_of_min = 0
+            self.settingtBean.reminder_two_ahead_of_sec = 0
 
     def initUI(self):
         self.in_set_all_time_status = False
         self.in_set_each_time_status = False
 
-        self.reminder_spinBox.setValue(self.settingtBean.reminder_ahead_of_time)
+        self.reminder_one_min_spinBox.setValue(self.settingtBean.reminder_one_ahead_of_min)
+        self.reminder_one_sec_spinBox.setValue(self.settingtBean.reminder_one_ahead_of_sec)
+        self.reminder_two_min_spinBox.setValue(self.settingtBean.reminder_two_ahead_of_min)
+        self.reminder_two_sec_spinBox.setValue(self.settingtBean.reminder_two_ahead_of_sec)
 
         self.checkBox_0930.setChecked(self.db_helper.get_reminder_bean('09:30').is_checked)
         self.checkBox_1000.setChecked(self.db_helper.get_reminder_bean('10:00').is_checked)
@@ -98,8 +104,12 @@ class ReminderDialog(QDialog, Ui_Dialog):
         self.pushButton_save_reminder.clicked.connect(lambda: self.save_reminder())
 
     def save_reminder(self):
-        reminder_ahead_of_time = self.reminder_spinBox.value()
-        self.settingtBean.reminder_ahead_of_time = reminder_ahead_of_time
+
+        self.settingtBean.reminder_one_ahead_of_min = self.reminder_one_min_spinBox.value()
+        self.settingtBean.reminder_one_ahead_of_sec = self.reminder_one_sec_spinBox.value()
+        self.settingtBean.reminder_two_ahead_of_min = self.reminder_two_min_spinBox.value()
+        self.settingtBean.reminder_two_ahead_of_sec = self.reminder_two_sec_spinBox.value()
+
         self.db_helper.update_setting_bean(self.settingtBean)
 
         self.db_helper.update_reminder_bean(reminder_time='09:30', is_checked=self.checkBox_0930.isChecked())
