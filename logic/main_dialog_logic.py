@@ -70,7 +70,6 @@ class MainDialog(QMainWindow, Ui_Dialog):
         pygame.mixer.init()
         # pygame.mixer.music.load("./music/didi.mp3")
         # pygame.mixer.music.load(r"C:\Users\zengg\Documents\Code\PycharmProjects\EnergyX\music\didi.mp3")
-        pygame.mixer.music.load(utils.get_resource_path("music/didi.mp3"))
 
         self.update_time()
 
@@ -140,14 +139,19 @@ class MainDialog(QMainWindow, Ui_Dialog):
                     break
 
         if self.target_time is not None:
+            # 计算两个提醒时间的差值
             reminder_one_diff = current_time.secsTo(self.target_time) - (self.db_helper.load_setting_bean().reminder_one_ahead_of_min * 60 + self.db_helper.load_setting_bean().reminder_one_ahead_of_sec)
             reminder_two_diff = current_time.secsTo(self.target_time) - (self.db_helper.load_setting_bean().reminder_two_ahead_of_min * 60 + self.db_helper.load_setting_bean().reminder_two_ahead_of_sec)
 
+            # 根据哪个提醒时间未触发，选择显示倒计时
             if reminder_one_diff > 0:
                 diff = reminder_one_diff
-            else:
+            elif reminder_two_diff > 0:
                 diff = reminder_two_diff
+            else:
+                diff = 0
 
+            # 显示倒计时
             if diff > 0:
                 hours, remainder = divmod(diff, 3600)
                 minutes, seconds = divmod(remainder, 60)
@@ -155,12 +159,24 @@ class MainDialog(QMainWindow, Ui_Dialog):
             else:
                 self.lcdNumber_reminder.display("00:00:00")
 
-            if diff == 0:
+            # 如果到达第一个提醒时间，播放声音
+            if reminder_one_diff == 0:
                 self.play_reminder_sound()
+
+            # 如果到达第二个提醒时间，播放声音
+            if reminder_two_diff == 0:
+                self.play_reminder_sound_2()
+
         else:
             self.lcdNumber_reminder.display("00:00:00")
 
     def play_reminder_sound(self):
+        pygame.mixer.music.load(utils.get_resource_path("music/didi.mp3"))
+        pygame.mixer.music.play()
+
+    def play_reminder_sound_2(self):
+        pygame.mixer.music.load(utils.get_resource_path("music/didi2.mp3"))
+        pygame.mixer.music.queue(utils.get_resource_path("music/didi2.mp3"))
         pygame.mixer.music.play()
 
 
@@ -354,7 +370,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.lineEdit_risk_equity.setText(utils.format_currency(str(utils.format_to_integer(static_equity))))
         self.lineEdit_position_value.setText(utils.format_currency(str(utils.format_to_integer(current_product_value))))
 
-        risk_percentage = "INF" if dynamic_equity == 0 else f"{utils.format_to_two_places(used_risk_amount / dynamic_equity * 100):.1f}%"
+        risk_percentage = "INF" if dynamic_equity == 0 else f"{utils.format_to_two_places(used_risk_amount / dynamic_equity * 100):.2f}%"
         self.lineEdit_risk_ratio.setText(f"{used_risk_amount}/{risk_percentage}")
 
     def on_return_pressed_to_dynamic_equity(self):

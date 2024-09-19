@@ -1,5 +1,5 @@
 ui转py：pyuic5 -o add_position_py.py add_position_ui.ui
 
-打包：pyinstaller -F -w --add-data "music/didi.mp3:music" --add-data "pic/energy.ico:pic" -i .\pic\energy.ico .\app.py -n="EnergyX.exe"
+打包：pyinstaller -F -w --add-data "music/*;music" --add-data "pic/*;pic" -i .\pic\energy.ico .\app.py -n "EnergyX.exe"
 
 导出所需的包：pip freeze > requirements.txt
