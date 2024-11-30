@@ -370,8 +370,8 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.lineEdit_risk_equity.setText(utils.format_currency(str(utils.format_to_integer(static_equity))))
         self.lineEdit_position_value.setText(utils.format_currency(str(utils.format_to_integer(current_product_value))))
 
-        risk_percentage = "INF" if dynamic_equity == 0 else f"{utils.format_to_two_places(used_risk_amount / dynamic_equity * 100):.2f}%"
-        self.lineEdit_risk_ratio.setText(f"{used_risk_amount}/{risk_percentage}")
+        risk_percentage = "INF" if dynamic_equity == 0 else f"{utils.format_to_two_places(used_risk_amount / dynamic_equity * 100):.3f}%"
+        self.lineEdit_risk_ratio.setText(f"{utils.format_to_integer(used_risk_amount)}/{risk_percentage}")
 
     def on_return_pressed_to_dynamic_equity(self):
         account_bean = self.db_helper.get_account_bean()
@@ -500,10 +500,22 @@ class MainDialog(QMainWindow, Ui_Dialog):
             stop_loss_color = "red" if stop_loss_text == "1.止盈金额" else "black"
 
             take_profit_price_amount = 0
+            profit_loss_ratio = 0
 
             if self.doubleSpinBox_take_profit_price.value() != self.doubleSpinBox_take_profit_price.minimum():
                 take_profit_price = self.doubleSpinBox_take_profit_price.value()
                 take_profit_price_amount = (take_profit_price - cost_price) * position_quantity * trading_units * position_factor
+
+                # Calculate profit-loss ratio based on position_bean
+                if self.position_bean is None:
+                    # Use stop_loss_amount for calculation
+                    if abs(stop_loss_amount) > 0:
+                        profit_loss_ratio = abs(take_profit_price_amount / stop_loss_amount)
+                else:
+                    # Use self.position_bean.initial_stop_loss for calculation
+                    initial_stop_loss = self.position_bean.initial_stop_loss
+                    if abs(initial_stop_loss) > 0:
+                        profit_loss_ratio = abs(take_profit_price_amount / initial_stop_loss)
 
             position_value = cost_price * position_quantity * trading_units
             margin_amount = position_value * margin_ratio / 100
@@ -522,7 +534,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
                         f'<span style="color:{stop_loss_color};">{stop_loss_text}: {stop_loss_amount:.0f}</span><br>'
                         f'2.头寸价值: {position_value}<br>'
                         f'3.保证金金额: {margin_amount:.0f}<br>'
-                        f'4.止盈金额: {take_profit_price_amount:.0f}'
+                        f'4.止盈金额: {take_profit_price_amount:.0f}，盈亏比: {profit_loss_ratio:.2f}<br>'
                     )
             else:
                 # Existing object, show changes with arrows
@@ -546,14 +558,14 @@ class MainDialog(QMainWindow, Ui_Dialog):
                         f'<span style="color:{stop_loss_color};">{(stop_loss_amount):.0f}</span></span><br>'
                         f'2.头寸价值: {previous_position_value:.0f} -> {position_value:.0f}<br>'
                         f'3.保证金金额: {previous_margin_amount:.0f} -> {margin_amount:.0f}<br>'
-                        f'4.止盈金额: {take_profit_price_amount:.0f}'
+                        f'4.止盈金额: {take_profit_price_amount:.0f}，盈亏比: {profit_loss_ratio:.2f}<br>'
                     )
-
 
             self.textBrowser.setHtml(result)
 
         except ValueError:
             self.textBrowser.setText("Invalid input")
+
 
 class CustomMenuItem(QWidget):
     clicked = pyqtSignal()
