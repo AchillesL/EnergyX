@@ -1,3 +1,7 @@
+conda activate EnergyX
+
+cd C:\Users\zengg\Documents\Code\PycharmProjects\EnergyX
+
 ui转py：pyuic5 -o add_position_py.py add_position_ui.ui
 
 打包：pyinstaller -F -w --add-data "music/*;music" --add-data "pic/*;pic" -i .\pic\energy.ico .\app.py -n "EnergyX.exe"

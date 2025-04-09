@@ -13,6 +13,7 @@ from logic.reminder_dialog_logic import ReminderDialog
 # from ui.ocr import TransparentWindow
 from utils import utils
 from utils.futures_product_info_utils import FuturesProductInfoUtils
+from logic import ths_helper_logic
 
 
 class MainDialog(QMainWindow, Ui_Dialog):
@@ -79,6 +80,8 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.timer.start(1000)  # 每秒更新一次
 
         self.update_account_and_position_info()
+        self.helper_dialog = ths_helper_logic.MainWindow()  # 创建对话框实例
+
 
     def setup_signals(self):
         self.pushButton_save.clicked.connect(self.on_save_clicked)
@@ -86,6 +89,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.pushButton_clear_table.clicked.connect(self.on_clear_all_positions_clicked)
         self.pushButton_account.clicked.connect(self.toggle_width)
         self.pushButton_reminder.clicked.connect(self.on_reminder_clicked)
+        self.pushButton_ths_helper.clicked.connect(self.on_ths_helper_clicked)
         self.lineEdit_dynamic_equity.returnPressed.connect(self.on_return_pressed_to_dynamic_equity)
         # self.pushButton_ocr.clicked.connect(self.on_ocr_clicked)
 
@@ -480,6 +484,9 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.radioButton_long.setEnabled(False)
         self.radioButton_short.setEnabled(False)
 
+    def on_ths_helper_clicked(self):
+        self.helper_dialog.show()  # 显示对话框
+
     def calculate(self):
         if self.selected_future is None or not self.doubleSpinBox_stop_loss_price.lineEdit().text() or not self.doubleSpinBox_cost_price.lineEdit().text() or not self.spinBox_position_quantity.lineEdit().text():
             return
@@ -567,6 +574,8 @@ class MainDialog(QMainWindow, Ui_Dialog):
             self.textBrowser.setText("Invalid input")
 
 
+
+
 class CustomMenuItem(QWidget):
     clicked = pyqtSignal()
 
@@ -614,3 +623,4 @@ class RadioButtonEventFilter(QtCore.QObject):
                     self.radioButton_long.setFocus()
                     return True
         return super().eventFilter(obj, event)
+

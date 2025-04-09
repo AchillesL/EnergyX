@@ -742,6 +742,35 @@ font: 16pt &quot;宋体&quot;;</string>
     </property>
    </column>
   </widget>
+  <widget class="QPushButton" name="pushButton_ths_helper">
+   <property name="geometry">
+    <rect>
+     <x>1630</x>
+     <y>10</y>
+     <width>150</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>150</width>
+     <height>50</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
+   </property>
+   <property name="text">
+    <string>同花顺助手</string>
+   </property>
+  </widget>
  </widget>
  <tabstops>
   <tabstop>comboBox_futures_type</tabstop>

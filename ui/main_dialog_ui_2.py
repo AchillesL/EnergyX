@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'main_dialog_ui_2.ui'
+# Form implementation generated from reading ui file '.\main_dialog_ui_2.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -396,6 +396,16 @@ class Ui_Dialog(object):
         item.setFont(font)
         self.tableWidget.setHorizontalHeaderItem(7, item)
         self.tableWidget.verticalHeader().setStretchLastSection(False)
+        self.pushButton_ths_helper = QtWidgets.QPushButton(Dialog)
+        self.pushButton_ths_helper.setGeometry(QtCore.QRect(1630, 10, 150, 50))
+        self.pushButton_ths_helper.setMinimumSize(QtCore.QSize(150, 50))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        font.setBold(True)
+        font.setWeight(75)
+        self.pushButton_ths_helper.setFont(font)
+        self.pushButton_ths_helper.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.pushButton_ths_helper.setObjectName("pushButton_ths_helper")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -441,3 +451,4 @@ class Ui_Dialog(object):
         item.setText(_translate("Dialog", "商品价值"))
         item = self.tableWidget.horizontalHeaderItem(7)
         item.setText(_translate("Dialog", "操作方向"))
+        self.pushButton_ths_helper.setText(_translate("Dialog", "同花顺助手"))
