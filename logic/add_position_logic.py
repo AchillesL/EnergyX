@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QDialog
 
 from database.models import FuturesPositionBean
-from ui.add_position_py import Ui_Dialog
+from ui.add_position_ui import Ui_Dialog
 from utils import utils
 
 

@@ -10,7 +10,7 @@ from database.models import FuturesPositionBean
 from logic import ths_helper_logic
 from logic.add_position_logic import AddPositionDialog
 from logic.reminder_dialog_logic import ReminderDialog
-from ui.main_dialog_ui_2 import Ui_Dialog
+from ui.main_dialog_ui import Ui_Dialog
 # from ui.ocr import TransparentWindow
 from utils import utils
 from utils.futures_product_info_utils import FuturesProductInfoUtils
