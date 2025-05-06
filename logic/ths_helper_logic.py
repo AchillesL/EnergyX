@@ -1,8 +1,8 @@
 import sys
+
 import pyautogui
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication, QDialog
-from PyQt5.uic.properties import QtWidgets, QtGui
 
 from ui.ths_helper import Ui_Dialog
 
@@ -11,9 +11,7 @@ class MainWindow(QDialog):
     def __init__(self):
         super().__init__()
 
-        # ===== 窗口样式设置 =====
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
-        # self.setAttribute(Qt.WA_TranslucentBackground)  # 可选：实现透明背景效果
 
         self.setStyleSheet("""
                 QDialog {
@@ -33,6 +31,18 @@ class MainWindow(QDialog):
         self.ui.pushButton_PageDown.clicked.connect(self.page_down)
         self.ui.pushButton_close.clicked.connect(self.close_app)
         self.ui.pushButton_pankou.clicked.connect(self.pankou)
+
+    def adjustWindowPosition(self):
+        """ 将窗口左侧对齐屏幕垂直中线 """
+        # 获取屏幕参数
+        screen = QApplication.primaryScreen().availableGeometry()
+
+        # 计算中线坐标
+        vertical_center_x = screen.width() // 2
+
+        # 设置窗口位置（左侧贴垂直中线，顶部贴边）
+        self.move(vertical_center_x, 0)
+
 
     # ===== 鼠标事件处理 =====
     def mousePressEvent(self, event):
@@ -89,6 +99,10 @@ class MainWindow(QDialog):
 
     def close_app(self):
         self.close()
+
+    def showEvent(self, event):
+        self.adjustWindowPosition()
+        super().showEvent(event)
 
 
 if __name__ == "__main__":

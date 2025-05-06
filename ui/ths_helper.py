@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(713, 60)
+        Dialog.resize(744, 60)
         Dialog.setMinimumSize(QtCore.QSize(600, 60))
         Dialog.setMaximumSize(QtCore.QSize(1200, 60))
         self.pushButton_ChatInvert = QtWidgets.QPushButton(Dialog)

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1800</width>
-    <height>500</height>
+    <height>554</height>
    </rect>
   </property>
   <property name="font">
@@ -424,6 +424,29 @@ font: 16pt &quot;宋体&quot;;</string>
      </widget>
     </item>
     <item>
+     <widget class="QPushButton" name="pushButton_ths_helper">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>45</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>助手</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QPushButton" name="pushButton_account">
       <property name="minimumSize">
        <size>
@@ -434,13 +457,15 @@ font: 16pt &quot;宋体&quot;;</string>
       <property name="font">
        <font>
         <pointsize>11</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
        </font>
       </property>
       <property name="focusPolicy">
        <enum>Qt::NoFocus</enum>
       </property>
       <property name="text">
-       <string>显示账户</string>
+       <string>账户</string>
       </property>
      </widget>
     </item>
@@ -596,7 +621,7 @@ font: 16pt &quot;宋体&quot;;</string>
   <widget class="QPushButton" name="pushButton_clear_table">
    <property name="geometry">
     <rect>
-     <x>1630</x>
+     <x>1640</x>
      <y>80</y>
      <width>150</width>
      <height>50</height>
@@ -653,6 +678,19 @@ font: 16pt &quot;宋体&quot;;</string>
    <column>
     <property name="text">
      <string>损盈金额</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>宋体</family>
+      <pointsize>11</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>操作方向</string>
     </property>
     <property name="font">
      <font>
@@ -728,48 +766,6 @@ font: 16pt &quot;宋体&quot;;</string>
      </font>
     </property>
    </column>
-   <column>
-    <property name="text">
-     <string>操作方向</string>
-    </property>
-    <property name="font">
-     <font>
-      <family>宋体</family>
-      <pointsize>11</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-   </column>
-  </widget>
-  <widget class="QPushButton" name="pushButton_ths_helper">
-   <property name="geometry">
-    <rect>
-     <x>1630</x>
-     <y>10</y>
-     <width>150</width>
-     <height>50</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>150</width>
-     <height>50</height>
-    </size>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>11</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="focusPolicy">
-    <enum>Qt::NoFocus</enum>
-   </property>
-   <property name="text">
-    <string>同花顺助手</string>
-   </property>
   </widget>
  </widget>
  <tabstops>

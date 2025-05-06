@@ -1,19 +1,19 @@
 import pygame
-from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer, QFileInfo, QDate
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer, QDate
 from PyQt5.QtGui import QPalette, QColor, QFont, QIcon
 from PyQt5.QtWidgets import QMainWindow, QCompleter, QTableWidgetItem, QMenu, QLabel, QWidgetAction, QWidget, \
     QVBoxLayout, QTableWidget, QLCDNumber
 
 from database.db_helper import DBHelper
 from database.models import FuturesPositionBean
+from logic import ths_helper_logic
 from logic.add_position_logic import AddPositionDialog
-from ui.main_dialog_ui_2 import Ui_Dialog
 from logic.reminder_dialog_logic import ReminderDialog
+from ui.main_dialog_ui_2 import Ui_Dialog
 # from ui.ocr import TransparentWindow
 from utils import utils
 from utils.futures_product_info_utils import FuturesProductInfoUtils
-from logic import ths_helper_logic
 
 
 class MainDialog(QMainWindow, Ui_Dialog):
@@ -35,7 +35,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
     def initUI(self):
 
         # 设置窗口标题和图标
-        self.setWindowTitle("Zengguo.Liang")
+        self.setWindowTitle("OnePercentAlpha")
 
         self.setWindowIcon(QIcon(utils.get_resource_path('pic\energy.ico')))
 
@@ -81,7 +81,6 @@ class MainDialog(QMainWindow, Ui_Dialog):
 
         self.update_account_and_position_info()
         self.helper_dialog = ths_helper_logic.MainWindow()  # 创建对话框实例
-
 
     def setup_signals(self):
         self.pushButton_save.clicked.connect(self.on_save_clicked)
@@ -144,8 +143,10 @@ class MainDialog(QMainWindow, Ui_Dialog):
 
         if self.target_time is not None:
             # 计算两个提醒时间的差值
-            reminder_one_diff = current_time.secsTo(self.target_time) - (self.db_helper.load_setting_bean().reminder_one_ahead_of_min * 60 + self.db_helper.load_setting_bean().reminder_one_ahead_of_sec)
-            reminder_two_diff = current_time.secsTo(self.target_time) - (self.db_helper.load_setting_bean().reminder_two_ahead_of_min * 60 + self.db_helper.load_setting_bean().reminder_two_ahead_of_sec)
+            reminder_one_diff = current_time.secsTo(self.target_time) - (
+                        self.db_helper.load_setting_bean().reminder_one_ahead_of_min * 60 + self.db_helper.load_setting_bean().reminder_one_ahead_of_sec)
+            reminder_two_diff = current_time.secsTo(self.target_time) - (
+                        self.db_helper.load_setting_bean().reminder_two_ahead_of_min * 60 + self.db_helper.load_setting_bean().reminder_two_ahead_of_sec)
 
             # 根据哪个提醒时间未触发，选择显示倒计时
             if reminder_one_diff > 0:
@@ -182,7 +183,6 @@ class MainDialog(QMainWindow, Ui_Dialog):
         pygame.mixer.music.load(utils.get_resource_path("music/didi2.mp3"))
         pygame.mixer.music.queue(utils.get_resource_path("music/didi2.mp3"))
         pygame.mixer.music.play()
-
 
     def initDB(self):
         if self.db_helper.is_futures_products_table_empty():
@@ -263,7 +263,6 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.setup_double_spin_boxes()
         self.textBrowser.clear()
 
-
     def radioButtonStateChanged(self):
         if self.radioButton_long.isChecked():
             print("Long position selected")
@@ -331,15 +330,16 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.tableWidget.setRowCount(len(self.positions))
 
         for row, position in enumerate(self.positions):
+            operation_direction_text = "多" if position.operation_direction == 1 else "空"
+
             self.set_table_item(row, 0, position.product_name)
             self.set_table_item(row, 1, str(utils.format_to_two_places(position.profit_loss_amount)), is_profit_loss=True)
-            self.set_table_item(row, 2, str(utils.format_to_two_places(position.stop_loss_price)))
-            self.set_table_item(row, 3, str(utils.format_to_two_places(position.cost_price)))
-            self.set_table_item(row, 4, str(position.position_quantity))
-            self.set_table_item(row, 5, str(utils.format_to_two_places(position.initial_stop_loss)))
-            self.set_table_item(row, 6, str(utils.format_currency(position.product_value)))
-            operation_direction_text = "多" if position.operation_direction == 1 else "空"
-            self.set_table_item(row, 7, operation_direction_text)
+            self.set_table_item(row, 2, operation_direction_text)
+            self.set_table_item(row, 3, str(utils.format_to_two_places(position.stop_loss_price)))
+            self.set_table_item(row, 4, str(utils.format_to_two_places(position.cost_price)))
+            self.set_table_item(row, 5, str(position.position_quantity))
+            self.set_table_item(row, 6, str(utils.format_to_two_places(position.initial_stop_loss)))
+            self.set_table_item(row, 7, str(utils.format_currency(position.product_value)))
 
     def set_table_item(self, row, column, text, is_profit_loss=False):
         item = QTableWidgetItem(text)
@@ -402,7 +402,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
 
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.FocusIn:
-            if obj in (self.doubleSpinBox_stop_loss_price, self.doubleSpinBox_cost_price,self.spinBox_position_quantity, self.doubleSpinBox_take_profit_price,self.lineEdit_dynamic_equity):
+            if obj in (self.doubleSpinBox_stop_loss_price, self.doubleSpinBox_cost_price, self.spinBox_position_quantity, self.doubleSpinBox_take_profit_price, self.lineEdit_dynamic_equity):
                 self.previous_focus_widget = obj
                 # self.pushButton_ocr.setEnabled(True)
                 utils.set_num_lock(True)
@@ -449,7 +449,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.update_account_and_position_info()
 
     def add_position(self, position_obj):
-        add_position_win = AddPositionDialog(self, position_obj ,self.db_helper)
+        add_position_win = AddPositionDialog(self, position_obj, self.db_helper)
         add_position_win.position_saved.connect(self.update_account_and_position_info)
         add_position_win.exec_()
 
@@ -485,7 +485,10 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.radioButton_short.setEnabled(False)
 
     def on_ths_helper_clicked(self):
-        self.helper_dialog.show()  # 显示对话框
+        if self.helper_dialog.isVisible():
+            self.helper_dialog.hide()  # 如果可见则隐藏
+        else:
+            self.helper_dialog.show()  # 否则显示对话框
 
     def calculate(self):
         if self.selected_future is None or not self.doubleSpinBox_stop_loss_price.lineEdit().text() or not self.doubleSpinBox_cost_price.lineEdit().text() or not self.spinBox_position_quantity.lineEdit().text():
@@ -574,8 +577,6 @@ class MainDialog(QMainWindow, Ui_Dialog):
             self.textBrowser.setText("Invalid input")
 
 
-
-
 class CustomMenuItem(QWidget):
     clicked = pyqtSignal()
 
@@ -605,6 +606,7 @@ class CustomMenuItem(QWidget):
             self.clicked.emit()  # 发送点击信号
             self.parent().close()  # 关闭菜单
 
+
 class RadioButtonEventFilter(QtCore.QObject):
     def __init__(self, radioButton_long, radioButton_short):
         super().__init__()
@@ -623,4 +625,3 @@ class RadioButtonEventFilter(QtCore.QObject):
                     self.radioButton_long.setFocus()
                     return True
         return super().eventFilter(obj, event)
-
