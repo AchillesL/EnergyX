@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1800</width>
-    <height>554</height>
+    <height>601</height>
    </rect>
   </property>
   <property name="font">
@@ -424,29 +424,6 @@ font: 16pt &quot;宋体&quot;;</string>
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="pushButton_ths_helper">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>45</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>11</pointsize>
-        <weight>50</weight>
-        <bold>false</bold>
-       </font>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::NoFocus</enum>
-      </property>
-      <property name="text">
-       <string>助手</string>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QPushButton" name="pushButton_account">
       <property name="minimumSize">
        <size>
@@ -653,7 +630,7 @@ font: 16pt &quot;宋体&quot;;</string>
      <x>750</x>
      <y>150</y>
      <width>1041</width>
-     <height>331</height>
+     <height>401</height>
     </rect>
    </property>
    <property name="focusPolicy">
@@ -766,6 +743,77 @@ font: 16pt &quot;宋体&quot;;</string>
      </font>
     </property>
    </column>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>500</y>
+     <width>711</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <item>
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_duanxian">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>45</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>短线</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_ths_helper">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>45</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>THS助手</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <tabstops>

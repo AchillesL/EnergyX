@@ -10,6 +10,7 @@ from database.models import FuturesPositionBean
 from logic import ths_helper_logic
 from logic.add_position_logic import AddPositionDialog
 from logic.reminder_dialog_logic import ReminderDialog
+from logic.short_term_trading_logic import ShortTermTradingDialog
 from ui.main_dialog_ui import Ui_Dialog
 # from ui.ocr import TransparentWindow
 from utils import utils
@@ -19,6 +20,10 @@ from utils.futures_product_info_utils import FuturesProductInfoUtils
 class MainDialog(QMainWindow, Ui_Dialog):
     def __init__(self):
         super().__init__()
+
+        self.resize(750, 500)
+        self.setMinimumSize(QtCore.QSize(750, 560))
+        self.setMaximumSize(QtCore.QSize(750, 560))
 
         self.db_helper = DBHelper()
         self.selected_future = None
@@ -89,6 +94,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.pushButton_account.clicked.connect(self.toggle_width)
         self.pushButton_reminder.clicked.connect(self.on_reminder_clicked)
         self.pushButton_ths_helper.clicked.connect(self.on_ths_helper_clicked)
+        self.pushButton_duanxian.clicked.connect(self.on_short_term_trading)
         self.lineEdit_dynamic_equity.returnPressed.connect(self.on_return_pressed_to_dynamic_equity)
         # self.pushButton_ocr.clicked.connect(self.on_ocr_clicked)
 
@@ -240,11 +246,29 @@ class MainDialog(QMainWindow, Ui_Dialog):
         print(f"Selected text: {text}")
 
     def setup_double_spin_boxes(self):
-        # Set the minimum step value for QDoubleSpinBox widgets
-        step_value = 1 if self.selected_future is None else self.selected_future.minimum_price_change
-        self.doubleSpinBox_stop_loss_price.setSingleStep(step_value)
-        self.doubleSpinBox_cost_price.setSingleStep(step_value)
-        self.doubleSpinBox_take_profit_price.setSingleStep(step_value)
+        if self.selected_future is None:
+            step_value = 1
+            decimals = 0
+        else:
+            step_value = self.selected_future.minimum_price_change
+            # 判断是否为整数
+            if step_value == int(step_value):
+                decimals = 0
+                step_value = int(step_value)  # 确保步长为整数类型
+            else:
+                # 计算小数位数
+                step_str = f"{step_value:.10f}".rstrip('0').rstrip('.')
+                decimals = len(step_str.split('.')[1]) if '.' in step_str else 0
+
+        # 设置所有价格输入框的属性
+        for spin_box in [
+            self.doubleSpinBox_stop_loss_price,
+            self.doubleSpinBox_cost_price,
+            self.doubleSpinBox_take_profit_price
+        ]:
+            spin_box.setDecimals(decimals)  # 设置小数位数
+            spin_box.setSingleStep(step_value)  # 设置步长
+            spin_box.setProperty("minStep", step_value)  # 保存最小步长属性
 
         self.reset_spin_boxes()
 
@@ -407,6 +431,18 @@ class MainDialog(QMainWindow, Ui_Dialog):
                 # self.pushButton_ocr.setEnabled(True)
                 utils.set_num_lock(True)
 
+        if event.type() == QtCore.QEvent.FocusOut:
+            if obj in (
+                    self.doubleSpinBox_stop_loss_price,
+                    self.doubleSpinBox_cost_price,
+                    self.doubleSpinBox_take_profit_price
+            ):
+                min_step = obj.property("minStep")
+                current_value = obj.value()
+                # 计算最接近的合法值
+                validated_value = round(current_value / min_step) * min_step
+                obj.setValue(validated_value)
+
         #
         # elif event.type() == QtCore.QEvent.FocusOut:
         #     if obj in (self.doubleSpinBox_stop_loss_price, self.doubleSpinBox_cost_price):
@@ -483,6 +519,10 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.comboBox_futures_type.setEnabled(False)
         self.radioButton_long.setEnabled(False)
         self.radioButton_short.setEnabled(False)
+
+    def on_short_term_trading(self):
+        self.short_term_trading_window = ShortTermTradingDialog()  # 保存为成员变量
+        self.short_term_trading_window.show()
 
     def on_ths_helper_clicked(self):
         if self.helper_dialog.isVisible():
