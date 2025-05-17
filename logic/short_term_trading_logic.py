@@ -10,55 +10,19 @@ from ui.short_term_trading import Ui_Dialog
 from utils import utils
 
 
-class ProductModel(QAbstractListModel):
-    def __init__(self, products_info, parent=None):
-        super().__init__(parent)
-        self.products_info = products_info
-
-    def rowCount(self, parent=QModelIndex()):
-        return len(self.products_info)
-
-    def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
-            return None
-        # 处理显示和编辑角色
-        if role in (Qt.DisplayRole, Qt.EditRole):
-            return self.products_info[index.row()]['name']
-        elif role == Qt.UserRole:
-            return self.products_info[index.row()]['py']
-        return None
-
-
-# 修改 ProductFilterProxyModel 的 filterAcceptsRow 方法
-class ProductFilterProxyModel(QSortFilterProxyModel):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.filter_text = ''
-
-    def setFilterText(self, text):
-        self.filter_text = text.strip().lower()
-        self.invalidateFilter()
-
-    def filterAcceptsRow(self, source_row, source_parent):
-        # 增加空值匹配逻辑
-        if not self.filter_text:
-            return True  # 允许显示所有选项当输入为空时
-
-        name = self.sourceModel().index(source_row, 0).data(Qt.DisplayRole).lower()
-        py = self.sourceModel().index(source_row, 0).data(Qt.UserRole).lower()
-        return self.filter_text in name or py.startswith(self.filter_text)
-
 class ShortTermTradingDialog(QDialog, Ui_Dialog):
     def __init__(self):
         super().__init__()
 
         # 初始化基础UI
         self.setupUi(self)
-        self._init_window_properties()
-        self.db_helper = DBHelper()
+        self.setWindowTitle("OnePercentAlpha (短线交易)")
+        self.setWindowIcon(QIcon(utils.get_resource_path('pic\energy.ico')))
+        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 
-        # 初始化组件
-        self._init_futures_selector()
+        self.db_helper = DBHelper()
+        self.initialize_futures_type_view()
+
         # 初始化价格输入框
         self._clear_price_inputs()
 
@@ -68,108 +32,62 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
         self.doubleSpinBox_price_1.setRange(0, 100000)
         self.doubleSpinBox_price_2.setRange(0, 100000)
 
-    # ----------------------
-    # 初始化相关方法
-    # ----------------------
-    def _init_window_properties(self):
-        """设置窗口基本属性"""
-        self.setWindowTitle("OnePercentAlpha (短线交易)")
-        self.setWindowIcon(QIcon(utils.get_resource_path('pic\energy.ico')))
-        self.setWindowFlags(self.windowFlags() |
-                            Qt.WindowStaysOnTopHint |
-                            Qt.WindowMinimizeButtonHint |
-                            Qt.WindowCloseButtonHint)
-
-    def _init_futures_selector(self):
+    def initialize_futures_type_view(self):
         self.futures_products = self.db_helper.get_all_futures_products()
-
-        # 确保pin_yin字段格式为带空格的全拼（如"ping guo"）
-        self.products_info = [
-            {'name': p.trading_product, 'py': p.pin_yin}
-            for p in self.futures_products
-        ]
-
-        # 创建数据模型
-        self.products_info = [
-            {'name': p.trading_product, 'py': p.pin_yin}
-            for p in self.futures_products
-        ]
-
-        # 创建模型体系
-        self.product_model = ProductModel(self.products_info)
-        self.proxy_model = ProductFilterProxyModel()
-        self.proxy_model.setSourceModel(self.product_model)
-
-        # 设置ComboBox模型（关键修改）
-        self.comboBox_futures_type.setModel(self.proxy_model)
-        self.comboBox_futures_type.setModelColumn(0)  # 显示name列
-
-        self._setup_completer()
+        self.products_list = [product.trading_product for product in self.futures_products]
+        self.comboBox_futures_type.addItems(self.products_list)
+        self.setup_completer()
         self.comboBox_futures_type.setCurrentIndex(-1)
 
-    # 修改 ShortTermTradingDialog 的 _setup_completer 方法
-    def _setup_completer(self):
-        self.completer = QCompleter(self)
-        self.completer.setModel(self.proxy_model)
+    def setup_completer(self):
+        self.completer = QCompleter(self.products_list, self.comboBox_futures_type)
         self.completer.setCaseSensitivity(False)
         self.completer.setFilterMode(Qt.MatchContains)
-        self.completer.setCompletionMode(QCompleter.UnfilteredPopupCompletion)
-
-        # 连接激活信号
-        self.completer.activated.connect(self._handle_completer_selection)
-
         self.comboBox_futures_type.setEditable(True)
         self.comboBox_futures_type.setCompleter(self.completer)
 
-        # 修正信号连接名称：把 _update_filter 改为 _update_completer_filter
-        self.comboBox_futures_type.lineEdit().textEdited.connect(self._update_completer_filter)
+        self.comboBox_futures_type.lineEdit().textEdited.connect(self.filter_items)
+        self.comboBox_futures_type.currentTextChanged.connect(self.handle_text_changed)
 
-    def _update_completer_filter(self, text):
-        """更新过滤条件"""
-        self.proxy_model.setFilterText(text)
-        # 强制清除当前选择状态
-        self.comboBox_futures_type.setCurrentIndex(-1)
-        self.comboBox_futures_type.lineEdit().setText(text)  # 确保显示当前输入内容
+    def filter_items(self, text):
+        # Save the current cursor position
+        cursor_pos = self.comboBox_futures_type.lineEdit().cursorPosition()
+        filtered_items = [item for item in self.products_list if text.lower() in item.lower()]
+        self.completer.setModel(QtCore.QStringListModel(filtered_items))
+        # Restore cursor position
+        self.comboBox_futures_type.lineEdit().setCursorPosition(cursor_pos)
+
+    def handle_text_changed(self, text):
+        self.print_selected_text(text)
+        font = QFont()
+        palette = self.comboBox_futures_type.lineEdit().palette()
+        if text in self.products_list:
+            self.selected_future = self.get_selected_future_by_text(text)
+            self.select_future_changed()
+            font.setBold(True)
+            palette.setColor(QPalette.Text, QColor("red"))
+        else:
+            font.setBold(False)
+            palette.setColor(QPalette.Text, QColor("black"))
+        self.comboBox_futures_type.lineEdit().setFont(font)
+        self.comboBox_futures_type.lineEdit().setPalette(palette)
+
+    def get_selected_future_by_text(self, text):
+        for product in self.futures_products:
+            if text == product.trading_product:
+                return product
 
 
-    def _handle_completer_selection(self, index):
-        """处理补全项选择"""
-        # 通过代理模型获取源模型索引
-        source_index = self.proxy_model.mapToSource(index)
-        # 设置当前索引并更新显示
-        self.comboBox_futures_type.setCurrentIndex(
-            self.proxy_model.mapFromSource(source_index).row()
-        )
-
-    def _on_completer_activated(self, text):
-        """ 用户显式选择时更新内容 """
-        self.comboBox_futures_type.lineEdit().setText(text)
-        self.comboBox_futures_type.setCurrentText(text)
-
-    def _handle_completer_selection(self, text):
-        """当用户从补全列表中选择时，手动更新编辑框内容"""
-        self.comboBox_futures_type.lineEdit().setText(text)
-
-    def _update_completer_filter(self, text):
-        """更新过滤条件并打印调试信息"""
-        print(f"\n[DEBUG] 输入内容: {text}")
-        self.proxy_model.setFilterText(text)
-
-        # 打印当前可见项
-        visible_items = [
-            self.proxy_model.index(i, 0).data()
-            for i in range(self.proxy_model.rowCount())
-        ]
-        print(f"[DEBUG] 过滤结果: {visible_items}")
+    def select_future_changed(self):
+        self._clear_price_inputs()
+        self.textBrowser.clear()
 
     def _clear_price_inputs(self):
         """清空价格输入框"""
         self.doubleSpinBox_price_1.clear()
         self.doubleSpinBox_price_2.clear()
 
-    # ----------------------
-    # 信号连接
-    # ----------------------
+
     def _connect_signals(self):
         """连接所有信号与槽"""
         self.comboBox_futures_type.currentTextChanged.connect(self._handle_text_changed)
@@ -189,7 +107,7 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
         font = QFont()
         palette = self.comboBox_futures_type.lineEdit().palette()
 
-        if text in self.products_info:
+        if text in self.products_list:
             font.setBold(True)
             palette.setColor(QPalette.Text, QColor("red"))
         else:
@@ -199,13 +117,11 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
         self.comboBox_futures_type.lineEdit().setFont(font)
         self.comboBox_futures_type.lineEdit().setPalette(palette)
 
-    # ----------------------
-    # 业务逻辑
-    # ----------------------
+
     def _process_selection(self, text):
         self.print_selected_text(text)
         # 检查是否存在匹配的产品名称
-        if any(p['name'] == text for p in self.products_info):
+        if any(p == text for p in self.products_list):
             self.selected_future = self._get_selected_future(text)
             self._on_future_changed()
 
