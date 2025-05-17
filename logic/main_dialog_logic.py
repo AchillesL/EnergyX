@@ -206,6 +206,8 @@ class MainDialog(QMainWindow, Ui_Dialog):
         )
 
         self.futures_products = self.db_helper.get_all_futures_products()
+        self.products_list = [product.trading_product for product in self.futures_products]
+
         model = QStandardItemModel()
         for product in self.futures_products:
             item = QStandardItem(product.trading_product)
@@ -500,7 +502,6 @@ class MainDialog(QMainWindow, Ui_Dialog):
     def set_position_info(self, position_obj):
         self.position_bean = position_obj
 
-        # 在self.products_list中找到与self.position_bean.product_name匹配的项目序号
         product_index = self.products_list.index(self.position_bean.product_name)
 
         # 设置futures_type_view的当前索引
