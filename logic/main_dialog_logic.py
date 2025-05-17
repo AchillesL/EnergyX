@@ -349,6 +349,8 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.radioButton_long.setEnabled(True)
         self.radioButton_short.setEnabled(True)
 
+        self.on_clear_clicked()
+
     def load_all_futures_position_to_table(self):
         self.positions = self.db_helper.load_all_futures_position()
         self.tableWidget.setRowCount(len(self.positions))
