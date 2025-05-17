@@ -1,15 +1,13 @@
 import sys
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QSortFilterProxyModel
-from PyQt5.QtGui import QIcon, QPalette, QColor, QFont
-from PyQt5.QtWidgets import QApplication, QDialog, QCompleter, QComboBox
-from utils.smart_combo_box import SmartComboBox
-
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QPalette, QColor, QFont, QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QApplication, QDialog
 
 from database.db_helper import DBHelper
 from ui.short_term_trading import Ui_Dialog
 from utils import utils
+from utils.smart_combo_box import SmartComboBox
 
 
 class ShortTermTradingDialog(QDialog, Ui_Dialog):
@@ -29,48 +27,33 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.db_helper = DBHelper()
         self.initialize_futures_type_view()
+
         self._clear_price_inputs()
-        self._connect_signals()
         self.doubleSpinBox_price_1.setRange(0, 100000)
         self.doubleSpinBox_price_2.setRange(0, 100000)
 
+        self.comboBox_futures_type.currentTextChanged.connect(self.handle_text_changed)
+        self.doubleSpinBox_price_1.valueChanged.connect(self._calculate_position)
+        self.doubleSpinBox_price_2.valueChanged.connect(self._calculate_position)
+
     def initialize_futures_type_view(self):
         self.futures_products = self.db_helper.get_all_futures_products()
-        # 添加数据时同时设置拼音
+        model = QStandardItemModel()
         for product in self.futures_products:
-            self.comboBox_futures_type.addItem(product.trading_product)
-            last_index = self.comboBox_futures_type.count() - 1
-            self.comboBox_futures_type.setItemData(last_index, product.pin_yin, Qt.UserRole)
-
-        self.products_list = [product.trading_product for product in self.futures_products]
+            item = QStandardItem(product.trading_product)
+            item.setData(product.pin_yin, Qt.UserRole)
+            model.appendRow(item)
+        self.comboBox_futures_type.setModel(model)
         self.comboBox_futures_type.setCurrentIndex(-1)
-        # 连接新的信号处理
-        self.comboBox_futures_type.currentTextChanged.connect(self.handle_text_changed)
-
-    def setup_completer(self):
-        self.completer = QCompleter(self.products_list, self.comboBox_futures_type)
-        self.completer.setCaseSensitivity(False)
-        self.completer.setFilterMode(Qt.MatchContains)
-        self.comboBox_futures_type.setEditable(True)
-        self.comboBox_futures_type.setCompleter(self.completer)
-
-        self.comboBox_futures_type.lineEdit().textEdited.connect(self.filter_items)
-        self.comboBox_futures_type.currentTextChanged.connect(self.handle_text_changed)
-
-    def filter_items(self, text):
-        # Save the current cursor position
-        cursor_pos = self.comboBox_futures_type.lineEdit().cursorPosition()
-        filtered_items = [item for item in self.products_list if text.lower() in item.lower()]
-        self.completer.setModel(QtCore.QStringListModel(filtered_items))
-        # Restore cursor position
-        self.comboBox_futures_type.lineEdit().setCursorPosition(cursor_pos)
 
     def handle_text_changed(self, text):
-        self.print_selected_text(text)
+        model = self.comboBox_futures_type.model()
+        exists = any(model.item(i).text() == text for i in range(model.rowCount()))
+
         font = QFont()
         palette = self.comboBox_futures_type.lineEdit().palette()
 
-        if text in self.products_list:
+        if exists:
             self.selected_future = self.get_selected_future_by_text(text)
             self.select_future_changed()
             font.setBold(True)
@@ -89,56 +72,13 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
 
 
     def select_future_changed(self):
-        self._clear_price_inputs()
+        self._setup_price_inputs()
         self.textBrowser.clear()
 
     def _clear_price_inputs(self):
         """清空价格输入框"""
         self.doubleSpinBox_price_1.clear()
         self.doubleSpinBox_price_2.clear()
-
-
-    def _connect_signals(self):
-        """连接所有信号与槽"""
-        self.comboBox_futures_type.currentTextChanged.connect(self._handle_text_changed)
-        self.doubleSpinBox_price_1.valueChanged.connect(self._calculate_position)
-        self.doubleSpinBox_price_2.valueChanged.connect(self._calculate_position)
-
-    def _handle_text_changed(self, text):
-        """处理文本变化事件"""
-        self._update_text_style(text)
-        self._process_selection(text)
-
-    # ----------------------
-    # UI更新方法
-    # ----------------------
-    def _update_text_style(self, text):
-        """更新输入框文本样式"""
-        font = QFont()
-        palette = self.comboBox_futures_type.lineEdit().palette()
-
-        if text in self.products_list:
-            font.setBold(True)
-            palette.setColor(QPalette.Text, QColor("red"))
-        else:
-            font.setBold(False)
-            palette.setColor(QPalette.Text, QColor("black"))
-
-        self.comboBox_futures_type.lineEdit().setFont(font)
-        self.comboBox_futures_type.lineEdit().setPalette(palette)
-
-
-    def _process_selection(self, text):
-        self.print_selected_text(text)
-        # 检查是否存在匹配的产品名称
-        if any(p == text for p in self.products_list):
-            self.selected_future = self._get_selected_future(text)
-            self._on_future_changed()
-
-    def _on_future_changed(self):
-        """当期货品种变化时的业务处理"""
-        self._setup_price_inputs()
-        self.textBrowser.clear()
 
     def _setup_price_inputs(self):
         """配置价格输入框参数"""
@@ -167,18 +107,6 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
         if '.' in str_value:
             return len(str_value.split('.')[1])
         return 0
-
-    # ----------------------
-    # 辅助方法
-    # ----------------------
-    def _get_selected_future(self, text):
-        """根据文本获取期货对象"""
-        return next((p for p in self.futures_products if p.trading_product == text), None)
-
-    @staticmethod
-    def print_selected_text(text):
-        """调试用打印方法"""
-        print(f"Selected text: {text}")
 
     def _calculate_position(self):
         """计算可开仓手数和风险比例"""

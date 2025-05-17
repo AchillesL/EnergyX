@@ -64,6 +64,9 @@ class SmartComboBox(QComboBox):
         # 创建新控件
         new_combobox = cls(old_combobox.parentWidget())
 
+        original_min_height = old_combobox.minimumHeight()
+        new_combobox.setMinimumHeight(original_min_height)
+
         # 复制属性
         new_combobox.setObjectName(original_name)
         new_combobox.setStyleSheet(style_sheet)
