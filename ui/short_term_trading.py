@@ -106,6 +106,13 @@ class Ui_Dialog(object):
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
         self.gridLayout.addWidget(self.label_3, 1, 2, 1, 1)
+        self.pushButton_empty = QtWidgets.QPushButton(self.gridLayoutWidget)
+        self.pushButton_empty.setMinimumSize(QtCore.QSize(0, 50))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        self.pushButton_empty.setFont(font)
+        self.pushButton_empty.setObjectName("pushButton_empty")
+        self.gridLayout.addWidget(self.pushButton_empty, 0, 3, 1, 1)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -116,3 +123,4 @@ class Ui_Dialog(object):
         self.label_2.setText(_translate("Dialog", "价格一"))
         self.label.setText(_translate("Dialog", "期货品种"))
         self.label_3.setText(_translate("Dialog", "价格二  "))
+        self.pushButton_empty.setText(_translate("Dialog", "清 空"))

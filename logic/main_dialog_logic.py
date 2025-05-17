@@ -523,6 +523,8 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.radioButton_short.setEnabled(False)
 
     def on_short_term_trading(self):
+        self.showMinimized()
+
         self.short_term_trading_window = ShortTermTradingDialog()  # 保存为成员变量
         self.short_term_trading_window.show()
 

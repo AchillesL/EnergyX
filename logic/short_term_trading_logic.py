@@ -31,12 +31,15 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
         self.initialize_futures_type_view()
 
         self._clear_price_inputs()
-        self.doubleSpinBox_price_1.setRange(0, 100000)
-        self.doubleSpinBox_price_2.setRange(0, 100000)
+        self.doubleSpinBox_price_1.setRange(0, 10000000)
+        self.doubleSpinBox_price_2.setRange(0, 10000000)
+
+        self.comboBox_futures_type.setFocus()
 
         self.comboBox_futures_type.currentTextChanged.connect(self.handle_text_changed)
         self.doubleSpinBox_price_1.valueChanged.connect(self._calculate_position)
         self.doubleSpinBox_price_2.valueChanged.connect(self._calculate_position)
+        self.pushButton_empty.clicked.connect(self.clear_info)
 
     def initialize_futures_type_view(self):
         self.futures_products = self.db_helper.get_all_futures_products()
@@ -202,6 +205,18 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
                 "</div>"
             )
         return f"<div style='line-height:1; padding:0 !important;'>{''.join(lines)}</div>"
+
+    def clear_info(self):
+        self.comboBox_futures_type.setCurrentIndex(-1)
+
+        self.doubleSpinBox_price_1.setValue(0)
+        self.doubleSpinBox_price_2.setValue(0)
+
+        self.doubleSpinBox_price_1.clear()
+        self.doubleSpinBox_price_2.clear()
+
+        self.textBrowser.clear()
+        self.comboBox_futures_type.setFocus()
 
 
 if __name__ == "__main__":
