@@ -3,7 +3,9 @@ import sys
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QSortFilterProxyModel
 from PyQt5.QtGui import QIcon, QPalette, QColor, QFont
-from PyQt5.QtWidgets import QApplication, QDialog, QCompleter
+from PyQt5.QtWidgets import QApplication, QDialog, QCompleter, QComboBox
+from utils.smart_combo_box import SmartComboBox
+
 
 from database.db_helper import DBHelper
 from ui.short_term_trading import Ui_Dialog
@@ -16,28 +18,34 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
 
         # 初始化基础UI
         self.setupUi(self)
+
+        self.comboBox_futures_type = SmartComboBox.replace_existing_combobox(
+            old_combobox=self.comboBox_futures_type,
+            parent_layout=self.gridLayout
+        )
+
         self.setWindowTitle("OnePercentAlpha (短线交易)")
         self.setWindowIcon(QIcon(utils.get_resource_path('pic\energy.ico')))
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
-
         self.db_helper = DBHelper()
         self.initialize_futures_type_view()
-
-        # 初始化价格输入框
         self._clear_price_inputs()
-
-        # 连接信号槽
         self._connect_signals()
-
         self.doubleSpinBox_price_1.setRange(0, 100000)
         self.doubleSpinBox_price_2.setRange(0, 100000)
 
     def initialize_futures_type_view(self):
         self.futures_products = self.db_helper.get_all_futures_products()
+        # 添加数据时同时设置拼音
+        for product in self.futures_products:
+            self.comboBox_futures_type.addItem(product.trading_product)
+            last_index = self.comboBox_futures_type.count() - 1
+            self.comboBox_futures_type.setItemData(last_index, product.pin_yin, Qt.UserRole)
+
         self.products_list = [product.trading_product for product in self.futures_products]
-        self.comboBox_futures_type.addItems(self.products_list)
-        self.setup_completer()
         self.comboBox_futures_type.setCurrentIndex(-1)
+        # 连接新的信号处理
+        self.comboBox_futures_type.currentTextChanged.connect(self.handle_text_changed)
 
     def setup_completer(self):
         self.completer = QCompleter(self.products_list, self.comboBox_futures_type)
@@ -61,6 +69,7 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
         self.print_selected_text(text)
         font = QFont()
         palette = self.comboBox_futures_type.lineEdit().palette()
+
         if text in self.products_list:
             self.selected_future = self.get_selected_future_by_text(text)
             self.select_future_changed()
@@ -69,6 +78,7 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
         else:
             font.setBold(False)
             palette.setColor(QPalette.Text, QColor("black"))
+
         self.comboBox_futures_type.lineEdit().setFont(font)
         self.comboBox_futures_type.lineEdit().setPalette(palette)
 
