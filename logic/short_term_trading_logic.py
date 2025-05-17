@@ -14,6 +14,8 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
     def __init__(self):
         super().__init__()
 
+        self.selected_future = None
+
         # 初始化基础UI
         self.setupUi(self)
 

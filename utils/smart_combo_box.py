@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import QComboBox, QCompleter
 
 
 class MultiFilterProxyModel(QSortFilterProxyModel):
-    # 保持原有MultiFilterProxyModel实现不变
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
         pattern = self.filterRegExp().pattern().lower()
         if not pattern:
@@ -13,17 +12,22 @@ class MultiFilterProxyModel(QSortFilterProxyModel):
         index = source.index(source_row, self.filterKeyColumn(), source_parent)
 
         display_text = source.data(index, Qt.DisplayRole).lower()
-        pinyin = source.data(index, Qt.UserRole).lower()
+
+        # 处理可能为None的拼音字段
+        pinyin_data = source.data(index, Qt.UserRole)
+        pinyin = (pinyin_data or "").lower()  # 若为None则转为空字符串
+
         return pattern in display_text or pattern in pinyin
 
 
 class SmartComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        # 保持原有SmartComboBox初始化逻辑不变
+        self.setInsertPolicy(QComboBox.NoInsert)  # 禁止自动插入新条目
+
         self.setFocusPolicy(Qt.StrongFocus)
         self.setEditable(True)
-        self.lineEdit().setPlaceholderText("输入拼音/产品名搜索...")
+        self.lineEdit().setPlaceholderText("输入拼音/名称搜索...")
 
         # 配置代理模型
         self.proxy_model = MultiFilterProxyModel(self)

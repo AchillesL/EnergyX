@@ -1,7 +1,7 @@
 import pygame
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal, QTime, QTimer, QDate
-from PyQt5.QtGui import QPalette, QColor, QFont, QIcon
+from PyQt5.QtGui import QPalette, QColor, QFont, QIcon, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QMainWindow, QCompleter, QTableWidgetItem, QMenu, QLabel, QWidgetAction, QWidget, \
     QVBoxLayout, QTableWidget, QLCDNumber
 
@@ -15,6 +15,7 @@ from ui.main_dialog_ui import Ui_Dialog
 # from ui.ocr import TransparentWindow
 from utils import utils
 from utils.futures_product_info_utils import FuturesProductInfoUtils
+from utils.smart_combo_box import SmartComboBox
 
 
 class MainDialog(QMainWindow, Ui_Dialog):
@@ -198,35 +199,31 @@ class MainDialog(QMainWindow, Ui_Dialog):
             self.db_helper.insert_default_account()
 
     def initialize_futures_type_view(self):
+
+        self.comboBox_futures_type = SmartComboBox.replace_existing_combobox(
+            old_combobox=self.comboBox_futures_type,
+            parent_layout=self.gridLayout
+        )
+
         self.futures_products = self.db_helper.get_all_futures_products()
-        self.products_list = [product.trading_product for product in self.futures_products]
-        self.comboBox_futures_type.addItems(self.products_list)
-        self.setup_completer()
+        model = QStandardItemModel()
+        for product in self.futures_products:
+            item = QStandardItem(product.trading_product)
+            item.setData(product.pin_yin, Qt.UserRole)
+            model.appendRow(item)
+        self.comboBox_futures_type.setModel(model)
         self.comboBox_futures_type.setCurrentIndex(-1)
 
-    def setup_completer(self):
-        self.completer = QCompleter(self.products_list, self.comboBox_futures_type)
-        self.completer.setCaseSensitivity(False)
-        self.completer.setFilterMode(Qt.MatchContains)
-        self.comboBox_futures_type.setEditable(True)
-        self.comboBox_futures_type.setCompleter(self.completer)
-
-        self.comboBox_futures_type.lineEdit().textEdited.connect(self.filter_items)
         self.comboBox_futures_type.currentTextChanged.connect(self.handle_text_changed)
 
-    def filter_items(self, text):
-        # Save the current cursor position
-        cursor_pos = self.comboBox_futures_type.lineEdit().cursorPosition()
-        filtered_items = [item for item in self.products_list if text.lower() in item.lower()]
-        self.completer.setModel(QtCore.QStringListModel(filtered_items))
-        # Restore cursor position
-        self.comboBox_futures_type.lineEdit().setCursorPosition(cursor_pos)
-
     def handle_text_changed(self, text):
-        self.print_selected_text(text)
+        model = self.comboBox_futures_type.model()
+        exists = any(model.item(i).text() == text for i in range(model.rowCount()))
+
         font = QFont()
         palette = self.comboBox_futures_type.lineEdit().palette()
-        if text in self.products_list:
+
+        if exists:
             self.selected_future = self.get_selected_future_by_text(text)
             self.select_future_changed()
             font.setBold(True)
@@ -234,6 +231,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
         else:
             font.setBold(False)
             palette.setColor(QPalette.Text, QColor("black"))
+
         self.comboBox_futures_type.lineEdit().setFont(font)
         self.comboBox_futures_type.lineEdit().setPalette(palette)
 
@@ -432,16 +430,17 @@ class MainDialog(QMainWindow, Ui_Dialog):
                 utils.set_num_lock(True)
 
         if event.type() == QtCore.QEvent.FocusOut:
-            if obj in (
-                    self.doubleSpinBox_stop_loss_price,
-                    self.doubleSpinBox_cost_price,
-                    self.doubleSpinBox_take_profit_price
-            ):
-                min_step = obj.property("minStep")
-                current_value = obj.value()
-                # 计算最接近的合法值
-                validated_value = round(current_value / min_step) * min_step
-                obj.setValue(validated_value)
+            if self.selected_future != None:
+                if obj in (
+                        self.doubleSpinBox_stop_loss_price,
+                        self.doubleSpinBox_cost_price,
+                        self.doubleSpinBox_take_profit_price
+                ):
+                    min_step = obj.property("minStep")
+                    current_value = obj.value()
+                    # 计算最接近的合法值
+                    validated_value = round(current_value / min_step) * min_step
+                    obj.setValue(validated_value)
 
         #
         # elif event.type() == QtCore.QEvent.FocusOut:
