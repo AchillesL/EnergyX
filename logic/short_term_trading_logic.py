@@ -8,9 +8,32 @@ from database.db_helper import DBHelper
 from ui.short_term_trading import Ui_Dialog
 from utils import utils
 from utils.smart_combo_box import SmartComboBox
+from logic.ocr import TransparentWindow, TextRecognitionListener
 
+
+class MyTextRecognitionListener(TextRecognitionListener):
+    def __init__(self, dialog):
+        self.dialog = dialog  # 添加对话框引用
+
+    def on_text_recognized(self, text: str, is_number: bool):
+        print(f"Received text: {text}, is_number: {is_number}")
+        # 处理识别结果
+        if self.dialog.current_ocr_target and is_number:
+            try:
+                # 移除可能存在的千分位分隔符
+                text = text.replace(',', '').replace(' ', '')
+                value = float(text)
+                self.dialog.current_ocr_target.setValue(value)
+            except ValueError:
+                pass
+
+        # 关闭透明窗口并恢复主窗口
+        self.dialog.transparent_window.hide()
+        self.dialog.show()
+        self.dialog.current_ocr_target = None  # 重置目标控件
 
 class ShortTermTradingDialog(QDialog, Ui_Dialog):
+
     def __init__(self):
         super().__init__()
 
@@ -36,10 +59,24 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
 
         self.comboBox_futures_type.setFocus()
 
+        self.last_focused_spinbox = None  # 记录最后获得焦点的输入框
+        self.transparent_window = TransparentWindow(MyTextRecognitionListener(self))
+
+        self.transparent_window.hide()
+
         self.comboBox_futures_type.currentTextChanged.connect(self.handle_text_changed)
         self.doubleSpinBox_price_1.valueChanged.connect(self._calculate_position)
         self.doubleSpinBox_price_2.valueChanged.connect(self._calculate_position)
+
+        # 设置按钮焦点策略
+        self.pushButton_ocr.setFocusPolicy(Qt.NoFocus)
+        self.pushButton_ocr.setEnabled(False)
+
+        self.pushButton_ocr.clicked.connect(self.ocr_clicked)
         self.pushButton_empty.clicked.connect(self.clear_info)
+
+        QApplication.instance().focusChanged.connect(self.on_focus_changed)
+
 
     def initialize_futures_type_view(self):
         self.futures_products = self.db_helper.get_all_futures_products()
@@ -205,6 +242,25 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
                 "</div>"
             )
         return f"<div style='line-height:1; padding:0 !important;'>{''.join(lines)}</div>"
+
+    def on_focus_changed(self, old, new):
+        """焦点变化时更新OCR按钮状态"""
+        # 只关注价格输入框的焦点变化
+        if new in [self.doubleSpinBox_price_1, self.doubleSpinBox_price_2]:
+            self.last_focused_spinbox = new
+            self.pushButton_ocr.setEnabled(True)
+        elif new == self.pushButton_ocr:
+            # 按钮自身获得焦点时不更新状态
+            return
+        else:
+            self.pushButton_ocr.setEnabled(False)
+
+    def ocr_clicked(self):
+        """OCR按钮点击处理"""
+        if self.last_focused_spinbox:
+            self.current_ocr_target = self.last_focused_spinbox
+            self.transparent_window.show()
+            self.hide()
 
     def clear_info(self):
         self.comboBox_futures_type.setCurrentIndex(-1)
