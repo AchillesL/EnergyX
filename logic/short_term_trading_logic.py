@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QIcon, QPalette, QColor, QFont, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QApplication, QDialog
 
@@ -13,24 +13,41 @@ from logic.ocr import TransparentWindow, TextRecognitionListener
 
 class MyTextRecognitionListener(TextRecognitionListener):
     def __init__(self, dialog):
-        self.dialog = dialog  # 添加对话框引用
+        self.dialog = dialog
 
     def on_text_recognized(self, text: str, is_number: bool):
         print(f"Received text: {text}, is_number: {is_number}")
-        # 处理识别结果
-        if self.dialog.current_ocr_target and is_number:
-            try:
-                # 移除可能存在的千分位分隔符
-                text = text.replace(',', '').replace(' ', '')
-                value = float(text)
-                self.dialog.current_ocr_target.setValue(value)
-            except ValueError:
-                pass
 
-        # 关闭透明窗口并恢复主窗口
-        self.dialog.transparent_window.hide()
-        self.dialog.show()
-        self.dialog.current_ocr_target = None  # 重置目标控件
+        try:
+            if self.dialog.current_ocr_target and is_number:
+                # 清理并转换文本
+                clean_text = text.replace(',', '').replace(' ', '').strip()
+                value = float(clean_text)
+
+                # 设置数值
+                self.dialog.current_ocr_target.setValue(value)
+
+                # 获取对应的QLineEdit组件
+                line_edit = self.dialog.current_ocr_target.lineEdit()
+                if line_edit:
+                    # 使用定时器确保在平台事件循环完成后执行
+                    QTimer.singleShot(50, lambda: [
+                        line_edit.deselect(),
+                        line_edit.end(False),
+                        line_edit.setFocus()
+                    ])
+
+            # 或者使用更可靠的方式：
+                # line_edit.end(False)  # False参数表示不进行选中
+
+        except ValueError:
+            pass
+        finally:
+            # 恢复窗口状态
+            self.dialog.transparent_window.hide()
+            self.dialog.show()
+            self.dialog.current_ocr_target = None
+
 
 class ShortTermTradingDialog(QDialog, Ui_Dialog):
 
