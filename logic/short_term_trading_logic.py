@@ -196,10 +196,7 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
             over_stop_loss = (max_lots + 1) * loss_per_lot
             # 计算风险比例
             actual_risk = (current_stop_loss / equity * 100) if equity > 0 else 0
-            over_risk = None
-            # 计算超出手数的风险
-            if max_lots >= 1:
-                over_risk = (over_stop_loss / equity * 100) if equity > 0 else 0
+            over_risk = (over_stop_loss / equity * 100) if equity > 0 else 0
             result = self._format_result(
                 max_lots,
                 actual_risk,
@@ -250,14 +247,13 @@ class ShortTermTradingDialog(QDialog, Ui_Dialog):
             f"风险比例：{STYLE_RED_BOLD % f'{actual_risk:.2f}%'};"
             "</div>"
         ]
-        if over_risk is not None:
-            lines.append(
-                f"<div {MARGIN_SECOND}>"
-                f"2.超开1手时，"
-                f"止损金额：{STYLE_RED_BOLD % f'{over_stop_loss:.2f}'} 元，"
-                f"风险比例：{STYLE_RED_BOLD % f'{over_risk:.3f}%'};"
-                "</div>"
-            )
+        lines.append(
+            f"<div {MARGIN_SECOND}>"
+            f"2.超开1手时，"
+            f"止损金额：{STYLE_RED_BOLD % f'{over_stop_loss:.2f}'} 元，"
+            f"风险比例：{STYLE_RED_BOLD % f'{over_risk:.3f}%'};"
+            "</div>"
+        )
         return f"<div style='line-height:1; padding:0 !important;'>{''.join(lines)}</div>"
 
     def on_focus_changed(self, old, new):
