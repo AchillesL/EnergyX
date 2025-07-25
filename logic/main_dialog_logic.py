@@ -295,8 +295,12 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.calculate()
 
     def on_save_clicked(self):
-        if self.selected_future is None or not self.doubleSpinBox_stop_loss_price.lineEdit().text() or not self.doubleSpinBox_cost_price.lineEdit().text() or not self.spinBox_position_quantity.lineEdit().text():
+
+        if self.selected_future is None:
             return
+
+        # if self.selected_future is None or not self.doubleSpinBox_stop_loss_price.lineEdit().text() or not self.doubleSpinBox_cost_price.lineEdit().text() or not self.spinBox_position_quantity.lineEdit().text():
+        #     return
 
         cost_price = self.doubleSpinBox_cost_price.value()
         stop_loss_price = self.doubleSpinBox_stop_loss_price.value()
@@ -320,6 +324,7 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.position_bean.position_quantity = position_quantity
         self.position_bean.profit_loss_amount = profit_loss_amount
         self.position_bean.product_value = cost_price * position_quantity * self.selected_future.trading_units
+        self.position_bean.stop_loss_point = abs(cost_price - stop_loss_price)
 
         self.db_helper.add_futures_position(self.position_bean)
         self.reset_input_info()
@@ -356,16 +361,27 @@ class MainDialog(QMainWindow, Ui_Dialog):
         self.tableWidget.setRowCount(len(self.positions))
 
         for row, position in enumerate(self.positions):
-            operation_direction_text = "多" if position.operation_direction == 1 else "空"
+            # 检查头寸数量是否为0
+            if position.position_quantity == 0:
+                # 品种名称 (列0)
+                self.set_table_item(row, 0, position.product_name)
+                # 止损价格 (列1)
+                self.set_table_item(row, 1, str(utils.format_to_two_places(position.stop_loss_price)))
+                # 其他列显示"——"
+                for col in [2, 3, 4, 5, 6, 7]:
+                    self.set_table_item(row, col, "—")
+            else:
+                # 正常处理所有列
+                operation_direction_text = "多" if position.operation_direction == 1 else "空"
 
-            self.set_table_item(row, 0, position.product_name)
-            self.set_table_item(row, 1, str(utils.format_to_two_places(position.profit_loss_amount)), is_profit_loss=True)
-            self.set_table_item(row, 2, operation_direction_text)
-            self.set_table_item(row, 3, str(utils.format_to_two_places(position.stop_loss_price)))
-            self.set_table_item(row, 4, str(utils.format_to_two_places(position.cost_price)))
-            self.set_table_item(row, 5, str(position.position_quantity))
-            self.set_table_item(row, 6, str(utils.format_to_two_places(position.initial_stop_loss)))
-            self.set_table_item(row, 7, str(utils.format_currency(position.product_value)))
+                self.set_table_item(row, 0, position.product_name)
+                self.set_table_item(row, 1, str(utils.format_to_two_places(position.stop_loss_price)))
+                self.set_table_item(row, 2, str(utils.format_to_two_places(position.profit_loss_amount)), is_profit_loss=True)
+                self.set_table_item(row, 3, str(position.position_quantity))
+                self.set_table_item(row, 4, str(utils.format_to_two_places(position.cost_price)))
+                self.set_table_item(row, 5, str(utils.format_to_two_places(position.stop_loss_point)))
+                self.set_table_item(row, 6, operation_direction_text)
+                self.set_table_item(row, 7, str(utils.format_currency(position.product_value)))
 
     def set_table_item(self, row, column, text, is_profit_loss=False):
         item = QTableWidgetItem(text)
@@ -547,6 +563,8 @@ class MainDialog(QMainWindow, Ui_Dialog):
             margin_ratio = self.selected_future.margin_ratio
 
             position_factor = 1 if self.radioButton_long.isChecked() else -1
+
+
 
             # Calculate current values
             stop_loss_amount = (stop_loss_price - cost_price) * position_quantity * trading_units * position_factor

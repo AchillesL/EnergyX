@@ -31,6 +31,7 @@ class MainWindow(QDialog):
         self.ui.pushButton_PageDown.clicked.connect(self.page_down)
         self.ui.pushButton_close.clicked.connect(self.close_app)
         self.ui.pushButton_pankou.clicked.connect(self.pankou)
+        self.ui.pushButton_select.clicked.connect(self.select)
 
     def adjustWindowPosition(self):
         """ 将窗口左侧对齐屏幕垂直中线 """
@@ -94,6 +95,14 @@ class MainWindow(QDialog):
         try:
             self._activate_win()
             pyautogui.hotkey('ctrl', 'l')
+        except Exception as e:
+            print(f"翻页下错误: {str(e)}")
+
+    def select(self):
+        try:
+            self._activate_win()
+            pyautogui.press('insert')
+
         except Exception as e:
             print(f"翻页下错误: {str(e)}")
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>744</width>
+    <width>889</width>
     <height>60</height>
    </rect>
   </property>
@@ -82,7 +82,7 @@
   <widget class="QPushButton" name="pushButton_close">
    <property name="geometry">
     <rect>
-     <x>570</x>
+     <x>700</x>
      <y>10</y>
      <width>121</width>
      <height>41</height>
@@ -113,6 +113,24 @@
    </property>
    <property name="text">
     <string>盘 口</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_select">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>10</y>
+     <width>121</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>加自选</string>
    </property>
   </widget>
  </widget>

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\ths_helper.ui'
+# Form implementation generated from reading ui file 'ths_helper.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(744, 60)
+        Dialog.resize(889, 60)
         Dialog.setMinimumSize(QtCore.QSize(600, 60))
         Dialog.setMaximumSize(QtCore.QSize(1200, 60))
         self.pushButton_ChatInvert = QtWidgets.QPushButton(Dialog)
@@ -36,7 +36,7 @@ class Ui_Dialog(object):
         self.pushButton_PageDown.setFont(font)
         self.pushButton_PageDown.setObjectName("pushButton_PageDown")
         self.pushButton_close = QtWidgets.QPushButton(Dialog)
-        self.pushButton_close.setGeometry(QtCore.QRect(570, 10, 121, 41))
+        self.pushButton_close.setGeometry(QtCore.QRect(700, 10, 121, 41))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.pushButton_close.setFont(font)
@@ -47,6 +47,12 @@ class Ui_Dialog(object):
         font.setPointSize(12)
         self.pushButton_pankou.setFont(font)
         self.pushButton_pankou.setObjectName("pushButton_pankou")
+        self.pushButton_select = QtWidgets.QPushButton(Dialog)
+        self.pushButton_select.setGeometry(QtCore.QRect(570, 10, 121, 41))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.pushButton_select.setFont(font)
+        self.pushButton_select.setObjectName("pushButton_select")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -59,3 +65,4 @@ class Ui_Dialog(object):
         self.pushButton_PageDown.setText(_translate("Dialog", "翻页（下）"))
         self.pushButton_close.setText(_translate("Dialog", "关 闭"))
         self.pushButton_pankou.setText(_translate("Dialog", "盘 口"))
+        self.pushButton_select.setText(_translate("Dialog", "加自选"))

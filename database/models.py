@@ -31,6 +31,7 @@ class FuturesPositionBean(Base):
     cost_price = Column(Float)
     position_quantity = Column(Integer)
     initial_stop_loss = Column(Float)
+    stop_loss_point = Column(Float)
     product_value = Column(Float)
     operation_direction = Column(Integer)
 

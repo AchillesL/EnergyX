@@ -654,32 +654,6 @@ font: 16pt &quot;宋体&quot;;</string>
    </column>
    <column>
     <property name="text">
-     <string>损盈金额</string>
-    </property>
-    <property name="font">
-     <font>
-      <family>宋体</family>
-      <pointsize>11</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>操作方向</string>
-    </property>
-    <property name="font">
-     <font>
-      <family>宋体</family>
-      <pointsize>11</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-   </column>
-   <column>
-    <property name="text">
      <string>止损价格</string>
     </property>
     <property name="font">
@@ -693,7 +667,7 @@ font: 16pt &quot;宋体&quot;;</string>
    </column>
    <column>
     <property name="text">
-     <string>成本价格</string>
+     <string>损盈金额</string>
     </property>
     <property name="font">
      <font>
@@ -719,7 +693,33 @@ font: 16pt &quot;宋体&quot;;</string>
    </column>
    <column>
     <property name="text">
-     <string>初始止损</string>
+     <string>成本价格</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>宋体</family>
+      <pointsize>11</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>止损点数</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>宋体</family>
+      <pointsize>11</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>操作方向</string>
     </property>
     <property name="font">
      <font>
